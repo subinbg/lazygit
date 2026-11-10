@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Develop and build the fork in a container.
+#
+#   fork/dev test    [integration [pattern]]   unit tests, or the integration tests (matching pattern)
+#   fork/dev build   [target]                  the binary into fork/dist/
+#                                              linux-x64 (default) | linux-arm64 | darwin-arm64
+#   fork/dev shell                             a shell in the toolchain image, the repo at /work
+#   fork/dev release [suffix]                  tag release-<upstream tag>[-suffix] and push it;
+#                                              CI builds and publishes the GitHub Release
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+TARGETS="linux-x64 linux-arm64 darwin-arm64"
+
+usage() { sed -n '2,10p' "$0" >&2; exit 1; }
+
+# The upstream release the fork is based on, e.g. v0.66.2.
+upstream_tag() {
+  git -C "$ROOT" describe --tags --abbrev=0 --match 'v[0-9]*'
+}
+
+native_platform() {
+  case "$(uname -m)" in arm64|aarch64) echo linux/arm64 ;; *) echo linux/amd64 ;; esac
+}
+
+docker_build() {
+  local platform="$1"; shift
+  command -v docker >/dev/null || { echo "docker is required" >&2; exit 1; }
+  docker build --progress=plain --platform "$platform" -f "$ROOT/fork/Dockerfile" "$@" "$ROOT"
+}
+
+cmd_test() {
+  # --no-cache-filter: the tests run every time, even when the sources did not change.
+  docker_build "$(native_platform)" --target test --no-cache-filter test --build-arg "TEST_ARGS=$*"
+}
+
+cmd_build() {
+  local target="${1:-linux-x64}"
+  [[ " $TARGETS " == *" $target "* ]] || { echo "unknown target '$target' (one of: $TARGETS)" >&2; exit 1; }
+  local tag; tag="$(upstream_tag)"
+  docker_build "$(native_platform)" --target export \
+    --build-arg "TARGET=$target" \
+    --build-arg "VERSION=${tag#v}+fork" \
+    --build-arg "COMMIT=$(git -C "$ROOT" rev-parse --short HEAD)" \
+    --output "type=local,dest=$ROOT/fork/dist"
+  ls -l "$ROOT/fork/dist/lazygit-$target"
+}
+
+cmd_shell() {
+  [[ -t 0 && -t 1 ]] || { echo "shell needs a terminal" >&2; exit 1; }
+  docker_build "$(native_platform)" --target base -t lazygit-fork:dev
+  docker run --rm -it --init -v "$ROOT:/work" -w /work lazygit-fork:dev bash
+}
+
+cmd_release() {
+  local suffix="${1:-}" tag
+  tag="release-$(upstream_tag)${suffix:+-$suffix}"
+  git -C "$ROOT" tag -a "$tag" -m "$tag"
+  git -C "$ROOT" push origin "$tag"
+  echo "pushed $tag; the release workflow builds linux-x64 and darwin-arm64 and publishes a GitHub Release"
+}
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  test|build|shell|release) "cmd_$cmd" "$@" ;;
+  *) usage ;;
+esac

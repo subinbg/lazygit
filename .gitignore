@@ -34,3 +34,6 @@ result
 result-*
 .direnv
 .envrc
+
+# fork build outputs
+/fork/dist/
