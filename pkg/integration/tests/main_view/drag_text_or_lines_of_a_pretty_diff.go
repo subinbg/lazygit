@@ -45,7 +45,7 @@ var DragTextOrLinesOfAPrettyDiff = NewIntegrationTest(NewIntegrationTestArgs{
 			)
 
 		// Dragging over the text copies the text as it reads on screen, and leaves
-		// the selected diff line where the drag started.
+		// the selected diff lines alone.
 		t.Views().Main().
 			IsFocused().
 			ClickAndHold(10, 4).
@@ -57,8 +57,10 @@ var DragTextOrLinesOfAPrettyDiff = NewIntegrationTest(NewIntegrationTestArgs{
 		t.Shell().DeleteFile("clipboard")
 
 		t.Views().Main().
+			IsFocused().
 			SelectedLines(
 				Contains("│+ADD1"),
+				Contains("│+ADD2"),
 			)
 	},
 })

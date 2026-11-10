@@ -1866,12 +1866,16 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 			g.captureMouse(v)
 		}
 
-		// A drag that selects text leaves the cursor where the press put it,
-		// since the cursor is the selected line of a list or diff.
+		// Selecting text leaves the cursor alone, since the cursor is the
+		// selected line of a list or diff: a press that starts a text selection
+		// doesn't move it (a plain click moves it on release, see
+		// CanStartTextSelection), and neither does the drag that extends it.
+		startsTextSelection := v.TextSelectable && ev.Key.KeyName() == MouseLeft && ev.Key.Mod() == ModNone &&
+			(v.CanStartTextSelection == nil || v.CanStartTextSelection(newX, newY))
 		draggingText := v.TextSelectable && v.IsSelectingText() && ev.Key.Mod()&ModMotion != 0
 
 		if !IsMouseScrollKey(ev.Key.KeyName()) && ev.Key.KeyName() != MouseRelease &&
-			!gestureIsModified && !draggingText {
+			!gestureIsModified && !startsTextSelection && !draggingText {
 			cursorX, cursorY := newCx, newCy
 			// A captured drag can report positions outside the view; keep the
 			// view cursor inside its bounds in that case. Handlers still get
@@ -1894,7 +1898,7 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 
 		if v.TextSelectable && ev.Key.KeyName() == MouseLeft {
 			if ev.Key.Mod()&ModMotion == 0 {
-				if v.CanStartTextSelection == nil || v.CanStartTextSelection(newX, newY) {
+				if startsTextSelection {
 					v.StartTextSelection(newX, newY)
 				} else {
 					v.ClearTextSelection()

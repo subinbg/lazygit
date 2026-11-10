@@ -63,11 +63,15 @@ func (self *SwitchToFocusedMainViewController) Context() types.Context {
 }
 
 func (self *SwitchToFocusedMainViewController) onClickMain(opts gocui.ViewMouseBindingOpts) error {
-	return self.focusMainView(self.c.Contexts().Normal, opts.Y)
+	return clickUnlessSelectingText(self.c.Contexts().Normal, func() error {
+		return self.focusMainView(self.c.Contexts().Normal, opts.Y)
+	})
 }
 
 func (self *SwitchToFocusedMainViewController) onClickSecondary(opts gocui.ViewMouseBindingOpts) error {
-	return self.focusMainView(self.c.Contexts().NormalSecondary, opts.Y)
+	return clickUnlessSelectingText(self.c.Contexts().NormalSecondary, func() error {
+		return self.focusMainView(self.c.Contexts().NormalSecondary, opts.Y)
+	})
 }
 
 func (self *SwitchToFocusedMainViewController) handleFocusMainView() error {

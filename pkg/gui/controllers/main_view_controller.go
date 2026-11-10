@@ -263,12 +263,12 @@ func (self *MainViewController) GetMouseKeybindings(opts types.KeybindingsOpts) 
 			FocusedView: self.otherContext.GetViewName(),
 		},
 		{
-			// Dragging after a click extends a range selection from the clicked line.
-			ViewName:    self.context.GetViewName(),
-			Key:         gocui.MouseLeft,
-			Modifier:    gocui.ModMotion,
-			Handler:     self.onDragInFocusedView,
-			FocusedView: self.context.GetViewName(),
+			// Dragging after a click extends a range selection from the clicked line,
+			// or the text selection the press started, wherever the focus is.
+			ViewName: self.context.GetViewName(),
+			Key:      gocui.MouseLeft,
+			Modifier: gocui.ModMotion,
+			Handler:  self.onDragInFocusedView,
 		},
 		{
 			ViewName: self.context.GetViewName(),
@@ -629,8 +629,10 @@ func (self *MainViewController) commitsOutsidePullRequestDisabledReason(commits 
 }
 
 func (self *MainViewController) onClickInAlreadyFocusedView(opts gocui.ViewMouseBindingOpts) error {
-	self.selectClickedDiffLine(opts.Y)
-	return nil
+	return clickUnlessSelectingText(self.context, func() error {
+		self.selectClickedDiffLine(opts.Y)
+		return nil
+	})
 }
 
 func (self *MainViewController) editClickedLine(opts gocui.ViewMouseBindingOpts) error {
@@ -673,6 +675,12 @@ func (self *MainViewController) lineToFlash(clickedViewLine int) int {
 }
 
 func (self *MainViewController) onClickInOtherViewOfMainViewPair(opts gocui.ViewMouseBindingOpts) error {
+	return clickUnlessSelectingText(self.context, func() error {
+		return self.clickInOtherViewOfMainViewPair(opts)
+	})
+}
+
+func (self *MainViewController) clickInOtherViewOfMainViewPair(opts gocui.ViewMouseBindingOpts) error {
 	// Carry the select mode over from the pane we're leaving, so that clicking into
 	// the other pane keeps hunk mode even the first time we enter it — its own mode
 	// would otherwise still be the default single line until it had been focused at
@@ -698,7 +706,7 @@ func (self *MainViewController) onDragInFocusedView(opts gocui.ViewMouseBindingO
 		self.dragAutoscroller.Update(opts.Y - view.OriginY())
 		return nil
 	}
-	if !self.isDiffView() || !view.Highlight {
+	if !self.isFocused() || !self.isDiffView() || !view.Highlight {
 		return nil
 	}
 	sel := self.diffSelectState()
@@ -721,13 +729,17 @@ func (self *MainViewController) onDragRelease(gocui.ViewMouseBindingOpts) error 
 	self.draggingWithMouse = false
 	self.dragAutoscroller.Cancel()
 
+	pendingClick := self.context.TakePendingClick()
 	if self.draggingText() {
 		view := self.context.GetView()
 		if view.HasTextSelection() {
 			return self.copySelectedText()
 		}
-		// a plain click selects nothing
+		// a plain click selects no text, and acts as a click
 		view.ClearTextSelection()
+		if pendingClick != nil {
+			return pendingClick()
+		}
 		return nil
 	}
 
@@ -1233,6 +1245,11 @@ func (self *MainViewController) openSearch() error {
 	}
 
 	return nil
+}
+
+// isFocused reports whether this pane has the focus.
+func (self *MainViewController) isFocused() bool {
+	return self.c.Context().Current().GetKey() == self.context.GetKey()
 }
 
 // draggingText reports whether the mouse gesture in progress selects text rather

@@ -24,6 +24,24 @@ type MainContext struct {
 	// types.ContentIsDiff). It is known as the render is asked for, well before there
 	// is any content to look at.
 	contentIsDiff bool
+	// pendingClick is a click on this pane whose press started a text selection
+	// (see gui.mouseTextSelection): it acts on release, unless the press turned
+	// into a drag that selected text.
+	pendingClick func() error
+}
+
+// SetPendingClick holds a click until the mouse button is released (see
+// pendingClick).
+func (self *MainContext) SetPendingClick(click func() error) {
+	self.pendingClick = click
+}
+
+// TakePendingClick returns the click held until the mouse button is released,
+// if any, and forgets it.
+func (self *MainContext) TakePendingClick() func() error {
+	click := self.pendingClick
+	self.pendingClick = nil
+	return click
 }
 
 var (
