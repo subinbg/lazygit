@@ -204,6 +204,8 @@ type GuiConfig struct {
 	ShowStagingSectionsInFilesView bool `yaml:"showStagingSectionsInFilesView"`
 	// If true, a row summarising the working tree changes (staged, unstaged, untracked) is shown above the commits in the commits view, like GitKraken's WIP node.
 	ShowWorkingTreeInCommitsView bool `yaml:"showWorkingTreeInCommitsView"`
+	// If true, the commits graph shows each stash as a node of its own, with a dotted line to the commit it was made on, GitKraken-style. Only with the 'lanes' graph style.
+	ShowStashesInCommitsView bool `yaml:"showStashesInCommitsView"`
 	// If true, the log shown in the main panel for the status panel (all branches) and for the selected branch is drawn with lazygit's own commit graph, like the commits panel, instead of showing the output of `git log --graph`.
 	MainViewCommitGraph bool `yaml:"mainViewCommitGraph"`
 	// If true, diffs in the main panel and in the staging panel are rendered with old/new line numbers, tinted backgrounds for added and removed lines and highlighted changed words. Has no effect when a custom pager (git.paging.pager) is configured.
@@ -966,6 +968,7 @@ func GetDefaultConfigForPlatform(platform string) *UserConfig {
 			GroupBranchesByPrefix:               true,
 			ShowStagingSectionsInFilesView:      true,
 			ShowWorkingTreeInCommitsView:        true,
+			ShowStashesInCommitsView:            true,
 			MainViewCommitGraph:                 true,
 			PrettyDiff:                          true,
 			PrettyDiffTheme:                     "dark",

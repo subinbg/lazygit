@@ -351,6 +351,11 @@ gui:
   # WIP node.
   showWorkingTreeInCommitsView: true
 
+  # If true, the commits graph shows each stash as a node of its own, with a
+  # dotted line to the commit it was made on, GitKraken-style. Only with the
+  # 'lanes' graph style.
+  showStashesInCommitsView: true
+
   # If true, the log shown in the main panel for the status panel (all branches)
   # and for the selected branch is drawn with lazygit's own commit graph, like the
   # commits panel, instead of showing the output of `git log --graph`.

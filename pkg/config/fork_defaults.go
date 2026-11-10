@@ -33,6 +33,7 @@ func ApplyUpstreamDefaults(cfg *UserConfig) {
 	cfg.Gui.ShowStagingSectionsInFilesView = false
 	cfg.Gui.ShowFileTree = true
 	cfg.Gui.ShowWorkingTreeInCommitsView = false
+	cfg.Gui.ShowStashesInCommitsView = false
 
 	// sidebar
 	cfg.Gui.GroupBranchesByPrefix = false

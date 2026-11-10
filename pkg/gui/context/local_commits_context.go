@@ -199,10 +199,7 @@ func NewLocalCommitsContext(c *ContextCommon) *LocalCommitsContext {
 			shouldShowGraph(c),
 			commitGraphSymbolSet(c),
 			c.Model().BisectInfo,
-			presentation.CommitListOpts{
-				WorkingTreeRow:    showWorkingTreeRow(c),
-				PublishLaneStyles: true,
-			},
+			commitListOpts(c),
 		)
 	}
 
@@ -256,12 +253,21 @@ func NewLocalCommitsContext(c *ContextCommon) *LocalCommitsContext {
 				Content: formatListSectionHeader(c.Tr.CommitsSectionHeader),
 			})
 		} else {
-			if showWorkingTreeRow(c) {
+			opts := commitListOpts(c)
+			if opts.WorkingTreeRow {
 				// the graph draws the node of the working-tree row when it can
-				graphRow := presentation.WorkingTreeGraphRow(c.Common, c.Model().Commits, shouldShowGraph(c))
+				graphRow := presentation.WorkingTreeGraphRow(c.Common, c.Model().Commits, shouldShowGraph(c), opts)
 				result = append(result, &NonModelItem{
 					Index:   0,
 					Content: graphRow + presentation.FormatWorkingTreeRow(c.Model().Files, c.Tr, graphRow == ""),
+					Column:  commitGraphColumn,
+				})
+			}
+
+			for _, row := range presentation.StashRows(c.Common, c.Model().Commits, shouldShowGraph(c), opts) {
+				result = append(result, &NonModelItem{
+					Index:   row.Index,
+					Content: row.Content,
 					Column:  commitGraphColumn,
 				})
 			}
@@ -460,6 +466,30 @@ func (self *LocalCommitsViewModel) GetShowWholeGitGraph() bool {
 
 func (self *LocalCommitsViewModel) GetCommits() []*models.Commit {
 	return self.getModel()
+}
+
+// commitListOpts are the fork's options the commits list is rendered with.
+func commitListOpts(c *ContextCommon) presentation.CommitListOpts {
+	return presentation.CommitListOpts{
+		WorkingTreeRow:    showWorkingTreeRow(c),
+		PublishLaneStyles: true,
+		Stashes:           stashesInGraph(c),
+	}
+}
+
+// stashesInGraph returns the stashes the commits graph shows rows for (see
+// presentation.StashRows): all of them, unless the list is one where they
+// don't belong, while rebasing or filtering, or showing a divergence.
+func stashesInGraph(c *ContextCommon) []*models.StashEntry {
+	commits := c.Model().Commits
+	if !c.UserConfig().Gui.ShowStashesInCommitsView ||
+		len(commits) == 0 ||
+		commits[0].Divergence != models.DivergenceNone ||
+		c.Modes().Filtering.Active() ||
+		c.Model().WorkingTreeStateAtLastCommitRefresh.CanShowTodos() {
+		return nil
+	}
+	return c.Model().StashEntries
 }
 
 // showWorkingTreeRow reports whether the commits list shows the working-tree

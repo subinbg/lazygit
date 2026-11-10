@@ -1682,6 +1682,10 @@ func (self *RefreshHelper) refreshStashEntries(filterPath string, env refreshEnv
 	})
 
 	self.refreshView(self.c.Contexts().Stash, env)
+	if self.c.UserConfig().Gui.ShowStashesInCommitsView {
+		// the commits graph shows the stashes
+		self.refreshView(self.c.Contexts().LocalCommits, env)
+	}
 }
 
 // never call this on its own, it should only be called from within refreshCommits()

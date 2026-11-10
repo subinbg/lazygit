@@ -28,6 +28,8 @@ package lanegraph
 import (
 	"strings"
 
+	"github.com/samber/lo"
+
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/gui/presentation/palette"
 	"github.com/jesseduffield/lazygit/pkg/gui/style"
@@ -39,6 +41,7 @@ const (
 	CommitGlyph      = '●'
 	MergeGlyph       = '•'
 	WorkingTreeGlyph = '◌'
+	StashGlyph       = '▣'
 
 	// vertical line of the (dotted) working-tree lane, above the HEAD commit
 	dashedVertical = '┆'
@@ -55,6 +58,19 @@ type Options struct {
 	// to. When it is empty or not among the commits, the working-tree row is
 	// a lone node.
 	HeadHash string
+	// Stashes adds a row for each stash, like GitKraken's stash nodes: a node
+	// with a dotted line down to the commit the stash was made on. The line
+	// never takes that commit's node from the line of its branch.
+	Stashes []Stash
+}
+
+// Stash places a stash in the graph.
+type Stash struct {
+	Hash string
+	// the commit the stash was made on, which must be among the commits
+	BaseHash string
+	// index of the commit the stash's row goes above, at most the base's
+	Before int
 }
 
 // Graph is a laid-out commit graph: one row per commit, preceded by the
@@ -64,6 +80,10 @@ type Graph struct {
 	laneOf    map[string]int
 	numLanes  int
 	hasWIPRow bool
+	// row index of each commit, and of each of Options.Stashes (-1 for a stash
+	// that has no row)
+	rowOfCommit []int
+	rowOfStash  []int
 }
 
 // cell is one terminal cell of a rendered row. A lane occupies two cells: the
@@ -83,6 +103,9 @@ type lane struct {
 	expect string
 	// true for the working-tree lane above the HEAD commit, drawn dotted
 	dashed bool
+	// true for the lane of a stash, which joins the commit it heads for
+	// rather than carrying on as that commit's line
+	side bool
 }
 
 // Build lays out the graph for the given commits, which must be in the order
@@ -98,38 +121,47 @@ func Build(commits []*models.Commit, opts Options) *Graph {
 
 	var lanes []*lane
 
-	// column of the leftmost lane heading for the commit, or -1
-	leftmostHeadingFor := func(hash string) int {
+	// column of the leftmost lane heading for the commit, or -1; side lanes
+	// count only when allowSide is set
+	leftmostHeadingFor := func(hash string, allowSide bool) int {
 		for k, ln := range lanes {
-			if ln != nil && ln.expect == hash {
+			if ln != nil && ln.expect == hash && (allowSide || !ln.side) {
 				return k
 			}
 		}
 		return -1
 	}
 
-	firstFree := func() int {
-		for k, ln := range lanes {
-			if ln == nil {
+	// the leftmost free column from the given one on
+	firstFreeFrom := func(start int) int {
+		for k := start; k < len(lanes); k++ {
+			if lanes[k] == nil {
 				return k
 			}
+		}
+		for len(lanes) < start {
+			lanes = append(lanes, nil)
 		}
 		lanes = append(lanes, nil)
 		return len(lanes) - 1
 	}
+	firstFree := func() int { return firstFreeFrom(0) }
 
-	numRows := len(commits)
+	numRows := len(commits) + len(opts.Stashes)
 	if g.hasWIPRow {
 		numRows++
 	}
 	g.rows = make([]row, 0, numRows)
 
-	layoutRow := func(hash string, parents []string, glyph rune, dashed bool) {
-		// 1. the node's column
-		col := leftmostHeadingFor(hash)
+	layoutRow := func(hash string, parents []string, glyph rune, dashed bool, side bool) {
+		// 1. the node's column; a side lane heading for the commit only joins
+		// it (see 2.), so a commit that only side lanes head for starts a lane
+		col := leftmostHeadingFor(hash, false)
 		expected := col >= 0
 		if !expected {
-			col = firstFree()
+			// A stash never opens the leftmost column, which is left to the
+			// line of the commits below it.
+			col = firstFreeFrom(lo.Ternary(side, 1, 0))
 			lanes[col] = &lane{}
 		}
 		nodeLane := lanes[col]
@@ -162,13 +194,14 @@ func Build(commits []*models.Commit, opts Options) *Graph {
 		} else {
 			nodeLane.expect = parents[0]
 			nodeLane.dashed = dashed
+			nodeLane.side = side
 			seen := map[string]bool{parents[0]: true}
 			for _, parent := range parents[1:] {
 				if seen[parent] {
 					continue
 				}
 				seen[parent] = true
-				if m := leftmostHeadingFor(parent); m >= 0 {
+				if m := leftmostHeadingFor(parent, false); m >= 0 {
 					mergeJoins = append(mergeJoins, m)
 				} else {
 					m := firstFree()
@@ -200,14 +233,28 @@ func Build(commits []*models.Commit, opts Options) *Graph {
 				}
 			}
 		}
-		layoutRow(workingTreeHash, parents, WorkingTreeGlyph, true)
+		layoutRow(workingTreeHash, parents, WorkingTreeGlyph, true, false)
 	}
-	for _, commit := range commits {
+
+	g.rowOfCommit = make([]int, len(commits))
+	g.rowOfStash = make([]int, len(opts.Stashes))
+	for k := range g.rowOfStash {
+		g.rowOfStash[k] = -1
+	}
+	for i, commit := range commits {
+		for k, stash := range opts.Stashes {
+			if stash.Before == i {
+				g.rowOfStash[k] = len(g.rows)
+				layoutRow(stashHashPrefix+stash.Hash, []string{stash.BaseHash}, StashGlyph, true, true)
+			}
+		}
+
 		glyph := CommitGlyph
 		if commit.IsMerge() {
 			glyph = MergeGlyph
 		}
-		layoutRow(commit.Hash(), commit.Parents(), glyph, false)
+		g.rowOfCommit[i] = len(g.rows)
+		layoutRow(commit.Hash(), commit.Parents(), glyph, false, false)
 	}
 
 	return g
@@ -215,6 +262,10 @@ func Build(commits []*models.Commit, opts Options) *Graph {
 
 // pseudo hash of the working-tree row; never collides with a real hash
 const workingTreeHash = "<working tree>"
+
+// prefix of the pseudo hash of a stash's row, so that it can't be taken for
+// the stash commit if that is ever among the commits
+const stashHashPrefix = "<stash>"
 
 func buildRow(
 	col int,
@@ -381,16 +432,33 @@ func (g *Graph) Width() int {
 // RowIndexOfCommit maps a commit index (into the commits Build was given) to
 // its row index.
 func (g *Graph) RowIndexOfCommit(commitIdx int) int {
+	if commitIdx >= 0 && commitIdx < len(g.rowOfCommit) {
+		return g.rowOfCommit[commitIdx]
+	}
 	if g.hasWIPRow {
 		return commitIdx + 1
 	}
 	return commitIdx
 }
 
+// RowIndexOfStash maps a stash index (into Options.Stashes) to its row index,
+// or -1 when the stash has no row.
+func (g *Graph) RowIndexOfStash(stashIdx int) int {
+	if stashIdx < 0 || stashIdx >= len(g.rowOfStash) {
+		return -1
+	}
+	return g.rowOfStash[stashIdx]
+}
+
 // LaneOf returns the column of the commit's node.
 func (g *Graph) LaneOf(hash string) (int, bool) {
 	col, ok := g.laneOf[hash]
 	return col, ok
+}
+
+// LaneOfStash returns the column of the stash's node.
+func (g *Graph) LaneOfStash(stash Stash) (int, bool) {
+	return g.LaneOf(stashHashPrefix + stash.Hash)
 }
 
 // LaneStyle returns the color of the lane the commit's node sits in, or nil
@@ -407,7 +475,7 @@ func (g *Graph) LaneStyle(hash string) *style.TextStyle {
 func (g *Graph) LaneStyles() map[string]*style.TextStyle {
 	result := make(map[string]*style.TextStyle, len(g.laneOf))
 	for hash, col := range g.laneOf {
-		if hash == workingTreeHash {
+		if hash == workingTreeHash || strings.HasPrefix(hash, stashHashPrefix) {
 			continue
 		}
 		result[hash] = palette.ByIndex(col)

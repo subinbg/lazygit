@@ -80,6 +80,14 @@ mirrors upstream. Everything the fork adds for itself lives in `fork/` and
   the commits view starts with `◌ WIP · 1 staged · 2 unstaged · 1 untracked`, like
   GitKraken's work-in-progress node. It re-renders whenever the files refresh. Config:
   `gui.showWorkingTreeInCommitsView`.
+- **Stash rows** (`pkg/gui/presentation/stashes_in_graph.go`): the lanes graph shows each
+  stash as a `▣` node with a dotted line to the commit it was made on, labelled
+  `stash@{n}` and followed by the stash's message, like GitKraken's stash nodes. A stash's row
+  goes above the first commit older than the stash, never below the commit it was made on; its
+  line takes a column of its own (never the leftmost) and curves into that commit's node
+  without taking over the commit's line. The rows can't be selected; the stash panel acts on
+  stashes. They are left out while rebasing, filtering, or showing a divergence, and for a
+  stash made on a commit that isn't loaded. Config: `gui.showStashesInCommitsView`.
 
 ### Main panel
 

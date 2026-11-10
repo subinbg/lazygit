@@ -33,6 +33,8 @@ type pipeSetCacheKey struct {
 type laneGraphCacheKey struct {
 	pipeSetCacheKey
 	workingTreeRow bool
+	// the stashes in the graph and where they go (see stashSignature)
+	stashes string
 }
 
 // laneGraphCacheEntry is a built lanes-style graph plus the data derived from
@@ -70,6 +72,9 @@ type CommitListOpts struct {
 	// for the other panels (branches, remotes, status). Only the main commits
 	// panel should do this, so that a branch keeps one color everywhere.
 	PublishLaneStyles bool
+	// The stashes the lanes graph shows rows for (see StashRows). Only
+	// meaningful for the local commits list, when not rebasing.
+	Stashes []*models.StashEntry
 }
 
 func laneStyleForCommit(hash string) *style.TextStyle {
@@ -161,6 +166,7 @@ func GetCommitListDisplayStrings(
 
 			sectionOpts := opts
 			sectionOpts.WorkingTreeRow = false
+			sectionOpts.Stashes = nil
 			if localSectionStart > 0 {
 				// we have some remote commits
 				start := startIdx
@@ -189,8 +195,9 @@ func GetCommitListDisplayStrings(
 
 			graphOpts := opts
 			if rebaseOffset > 0 {
-				// the working-tree row is not shown while rebasing
+				// the working-tree and stash rows are not shown while rebasing
 				graphOpts.WorkingTreeRow = false
+				graphOpts.Stashes = nil
 			}
 			start := max(startIdx-rebaseOffset, 0)
 			end := max(endIdx-rebaseOffset, 0)
@@ -401,7 +408,9 @@ func renderGraph(
 // above the commits (a dotted node in the HEAD commit's lane), padded to the
 // width of the graph so that the text after it lines up with the commit
 // subjects. It's empty when the graph is hidden or not in the lanes style.
-func WorkingTreeGraphRow(common *common.Common, commits []*models.Commit, showGraph bool) string {
+// opts are the ones the list is rendered with, so that the row is laid out in
+// the same graph.
+func WorkingTreeGraphRow(common *common.Common, commits []*models.Commit, showGraph bool, opts CommitListOpts) string {
 	if !showGraph || len(commits) == 0 || common.UserConfig().Git.Log.GraphStyle == "classic" {
 		return ""
 	}
@@ -409,7 +418,8 @@ func WorkingTreeGraphRow(common *common.Common, commits []*models.Commit, showGr
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	entry := loadLaneGraph(commits, CommitListOpts{WorkingTreeRow: true})
+	opts.WorkingTreeRow = true
+	entry := loadLaneGraph(commits, opts)
 	return entry.graph.RenderRow(0, entry.graph.Width())
 }
 
@@ -424,6 +434,8 @@ func loadLaneGraph(commits []*models.Commit, opts CommitListOpts) *laneGraphCach
 		},
 		workingTreeRow: opts.WorkingTreeRow,
 	}
+	stashes := placeStashes(commits, opts.Stashes)
+	cacheKey.stashes = stashSignature(stashes)
 
 	entry, ok := laneGraphCache[cacheKey]
 	if !ok {
@@ -435,6 +447,9 @@ func loadLaneGraph(commits []*models.Commit, opts CommitListOpts) *laneGraphCach
 		g := lanegraph.Build(commits, lanegraph.Options{
 			WorkingTree: opts.WorkingTreeRow,
 			HeadHash:    HeadCommitHash(commits),
+			Stashes: lo.Map(stashes, func(stash stashPlacement, _ int) lanegraph.Stash {
+				return stash.Stash
+			}),
 		})
 		entry = &laneGraphCacheEntry{graph: g, laneStyles: g.LaneStyles()}
 		laneGraphCache[cacheKey] = entry

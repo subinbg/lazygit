@@ -295,3 +295,92 @@ func TestLaneStyles(t *testing.T) {
 	assert.NotSame(t, styles["1"], styles["3"], "lanes have different colors")
 	assert.Same(t, styles["1"], styles["2"])
 }
+
+func TestStashes(t *testing.T) {
+	scenarios := []struct {
+		name     string
+		commits  []models.NewCommitOpts
+		opts     Options
+		expected string
+		// row index of each stash
+		stashRows []int
+		// row index of each commit
+		commitRows []int
+	}{
+		{
+			name: "a stash on the head commit sits beside the branch, right of it, and joins it",
+			commits: []models.NewCommitOpts{
+				{Hash: "1", Parents: []string{"2"}},
+				{Hash: "2"},
+			},
+			opts: Options{Stashes: []Stash{{Hash: "s", BaseHash: "1", Before: 0}}},
+			expected: `
+			  ▣
+			●─╯
+			●`,
+			stashRows:  []int{0},
+			commitRows: []int{1, 2},
+		},
+		{
+			name: "a stash on an older commit runs dotted beside the branch, which keeps its column",
+			commits: []models.NewCommitOpts{
+				{Hash: "1", Parents: []string{"2"}},
+				{Hash: "2", Parents: []string{"3"}},
+				{Hash: "3"},
+			},
+			opts: Options{Stashes: []Stash{{Hash: "s", BaseHash: "3", Before: 0}}},
+			expected: `
+			  ▣
+			● ┆
+			● ┆
+			●─╯`,
+			stashRows:  []int{0},
+			commitRows: []int{1, 2, 3},
+		},
+		{
+			name: "the stash's line doesn't take the node from the branch's line",
+			commits: []models.NewCommitOpts{
+				{Hash: "1", Parents: []string{"2"}},
+				{Hash: "2", Parents: []string{"3"}},
+				{Hash: "3"},
+			},
+			opts: Options{
+				WorkingTree: true,
+				HeadHash:    "1",
+				Stashes:     []Stash{{Hash: "s", BaseHash: "2", Before: 1}},
+			},
+			expected: `
+			◌
+			●
+			│ ▣
+			●─╯
+			●`,
+			stashRows:  []int{2},
+			commitRows: []int{1, 3, 4},
+		},
+		{
+			name: "a stash that goes below its commits has no row",
+			commits: []models.NewCommitOpts{
+				{Hash: "1"},
+			},
+			opts:       Options{Stashes: []Stash{{Hash: "s", BaseHash: "1", Before: 1}}},
+			expected:   "●",
+			stashRows:  []int{-1},
+			commitRows: []int{0},
+		},
+	}
+
+	for _, s := range scenarios {
+		t.Run(s.name, func(t *testing.T) {
+			g := Build(makeCommits(s.commits), s.opts)
+			assert.Equal(t, expected(s.expected), renderPlain(g, false))
+			for k, row := range s.stashRows {
+				assert.Equal(t, row, g.RowIndexOfStash(k))
+			}
+			for i, row := range s.commitRows {
+				assert.Equal(t, row, g.RowIndexOfCommit(i))
+			}
+			assert.NotContains(t, g.LaneStyles(), "<stash>s")
+		})
+	}
+}
