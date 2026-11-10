@@ -154,7 +154,8 @@ fork/dev release 2      # a second release on the same upstream tag: release-v0.
 ```
 
 The tag starts `.github/workflows/fork-release.yml`: unit and integration tests, a static Linux
-x64 binary and a macOS arm64 binary (cross-compiled, then run on a macOS runner), and a GitHub
+x64 binary and a macOS arm64 binary (cross-compiled, then run on a macOS runner, which the
+Release does not wait for since GitHub sometimes has none to give), and a GitHub
 Release with `lazygit-<ref>-<target>.tar.gz` files, each holding a bare `lazygit` executable,
 and `SHA256SUMS`. Running the workflow by hand builds the binaries as artifacts only.
 Upstream's own workflows are kept unchanged, to merge cleanly, and are disabled in the
