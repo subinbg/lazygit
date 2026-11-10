@@ -20,12 +20,14 @@ import (
 	"github.com/samber/lo"
 )
 
-type colorMatcher struct {
-	patterns map[string]*style.TextStyle
-	isRegex  bool // NOTE: this value is needed only until the deprecated branchColors config is removed and only regex color patterns are used
+type branchColorPattern struct {
+	pattern string
+	style   style.TextStyle
 }
 
-var colorPatterns *colorMatcher
+var branchColorPatterns []branchColorPattern
+
+var dimYellow = style.FgYellow.SetDim()
 
 func GetBranchListDisplayStrings(
 	branches []*models.Branch,
@@ -197,20 +199,31 @@ func getBranchDisplayStrings(
 
 // GetBranchTextStyle branch color
 func GetBranchTextStyle(name string) style.TextStyle {
-	if style, ok := colorPatterns.match(name); ok {
-		return *style
+	if style, ok := matchBranchColorPattern(name); ok {
+		return style
 	}
 
 	// no explicit pattern matched: assign a stable palette color per branch
 	return *palette.ByName(name)
 }
 
+// matchBranchColorPattern returns the style of the first of the configured
+// branchColorPatterns that matches the name.
+func matchBranchColorPattern(name string) (style.TextStyle, bool) {
+	for _, p := range branchColorPatterns {
+		if matched, _ := regexp.MatchString(p.pattern, name); matched {
+			return p.style, true
+		}
+	}
+	return style.TextStyle{}, false
+}
+
 // GetBranchTextStyleForBranch is like GetBranchTextStyle but, when no
 // explicit pattern matches, prefers the color of the graph lane holding the
 // branch's head commit, so the branches panel matches the commit graph.
 func GetBranchTextStyleForBranch(b *models.Branch) style.TextStyle {
-	if style, ok := colorPatterns.match(b.Name); ok {
-		return *style
+	if style, ok := matchBranchColorPattern(b.Name); ok {
+		return style
 	}
 
 	if laneStyle := laneStyleForCommit(b.CommitHash); laneStyle != nil {
@@ -224,8 +237,8 @@ func GetBranchTextStyleForBranch(b *models.Branch) style.TextStyle {
 // commit it points at, falling back to a stable per-name color. Explicit
 // branchColorPatterns match the branch name without the remote, as before.
 func GetRemoteBranchTextStyle(b *models.RemoteBranch) style.TextStyle {
-	if style, ok := colorPatterns.match(b.Name); ok {
-		return *style
+	if style, ok := matchBranchColorPattern(b.Name); ok {
+		return style
 	}
 
 	if laneStyle := laneStyleForRef(b.FullName()); laneStyle != nil {
@@ -233,24 +246,6 @@ func GetRemoteBranchTextStyle(b *models.RemoteBranch) style.TextStyle {
 	}
 
 	return *palette.ByName(b.FullName())
-}
-
-func (m *colorMatcher) match(name string) (*style.TextStyle, bool) {
-	if m.isRegex {
-		for pattern, style := range m.patterns {
-			if matched, _ := regexp.MatchString(pattern, name); matched {
-				return style, true
-			}
-		}
-	} else {
-		// old behavior using the deprecated branchColors behavior matching on branch type
-		branchType := strings.Split(name, "/")[0]
-		if value, ok := m.patterns[branchType]; ok {
-			return value, true
-		}
-	}
-
-	return nil, false
 }
 
 func BranchStatus(
@@ -274,7 +269,12 @@ func BranchStatus(
 		} else if branch.RemoteBranchNotStoredLocally() {
 			result = style.FgMagenta.Sprint("?")
 		} else if branch.IsBehindForPull() && branch.IsAheadForPull() {
-			result = style.FgYellow.Sprintf("↓%s↑%s", branch.BehindForPull, branch.AheadForPull)
+			// A branch that diverged only because its upstream was rewritten
+			// has no commits of its own, and fast-forwarding it resolves the
+			// divergence. Dim it to set it apart from a branch whose
+			// divergence needs a decision.
+			divergenceStyle := lo.Ternary(branch.UpstreamRewritten.Load(), dimYellow, style.FgYellow)
+			result = divergenceStyle.Sprintf("↓%s↑%s", branch.BehindForPull, branch.AheadForPull)
 		} else if branch.IsBehindForPull() {
 			result = style.FgYellow.Sprintf("↓%s", branch.BehindForPull)
 		} else if branch.IsAheadForPull() {
@@ -306,11 +306,10 @@ func divergenceStr(
 	return result
 }
 
-func SetCustomBranches(customBranchColors map[string]string, isRegex bool) {
-	colorPatterns = &colorMatcher{
-		patterns: utils.SetCustomColors(customBranchColors),
-		isRegex:  isRegex,
-	}
+func SetCustomBranches(patterns config.ColorPatterns) {
+	branchColorPatterns = lo.Map(patterns, func(p config.ColorPattern, _ int) branchColorPattern {
+		return branchColorPattern{pattern: p.Pattern, style: utils.CustomColorStyle(p.Color)}
+	})
 }
 
 func WithPrColor(state string, text string, isBg bool) string {

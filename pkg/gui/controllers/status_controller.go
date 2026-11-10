@@ -166,7 +166,7 @@ func (self *StatusController) showAllBranchLogs() {
 		}
 	} else {
 		cmdObj := self.c.Git().Branch.AllBranchesLogCmdObj()
-		task = types.NewRunPtyTask(cmdObj.GetCmd())
+		task = types.NewRunDiffRendererTask(cmdObj.GetCmd())
 		if self.usesLogGraph() {
 			title = fmt.Sprintf(self.c.Tr.LogXOfYTitle, i+2, n+1)
 		} else if n > 1 {

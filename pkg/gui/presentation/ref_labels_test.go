@@ -10,6 +10,7 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/commands/git_commands"
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/common"
+	"github.com/jesseduffield/lazygit/pkg/gui/presentation/graph"
 	"github.com/jesseduffield/lazygit/pkg/utils"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
@@ -129,6 +130,7 @@ func TestGetCommitListDisplayStringsRefLabels(t *testing.T) {
 				0,
 				len(commits),
 				s.showGraph,
+				graph.BoxDrawingSymbols,
 				git_commands.NewNullBisectInfo(),
 				CommitListOpts{},
 			)

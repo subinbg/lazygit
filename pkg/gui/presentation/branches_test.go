@@ -2,6 +2,7 @@ package presentation
 
 import (
 	"fmt"
+	"slices"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/common"
 	"github.com/jesseduffield/lazygit/pkg/config"
 	"github.com/jesseduffield/lazygit/pkg/gui/presentation/icons"
+	"github.com/jesseduffield/lazygit/pkg/gui/presentation/palette"
 	"github.com/jesseduffield/lazygit/pkg/gui/style"
 	"github.com/jesseduffield/lazygit/pkg/gui/types"
 	"github.com/jesseduffield/lazygit/pkg/i18n"
@@ -422,7 +424,7 @@ func Test_getBranchDisplayStrings(t *testing.T) {
 	c := common.NewDummyCommon()
 	// these scenarios were written against upstream's defaults
 	config.ApplyUpstreamDefaults(c.UserConfig())
-	SetCustomBranches(c.UserConfig().Gui.BranchColorPatterns, true)
+	SetCustomBranches(c.UserConfig().Gui.Theme.BranchColorPatterns)
 
 	for i, s := range scenarios {
 		icons.SetNerdFontsVersion(lo.Ternary(s.useIcons, "3", ""))
@@ -438,4 +440,50 @@ func Test_getBranchDisplayStrings(t *testing.T) {
 			assert.Equal(t, s.expected, strings)
 		})
 	}
+}
+
+func TestGetBranchTextStyle(t *testing.T) {
+	defer SetCustomBranches(nil)
+
+	patterns := config.ColorPatterns{
+		{Pattern: "^feature/", Color: "green"},
+		{Pattern: `ISSUE-\d+`, Color: "red"},
+	}
+
+	SetCustomBranches(patterns)
+	assert.Equal(t, style.FgGreen, GetBranchTextStyle("feature/ISSUE-1"))
+	assert.Equal(t, style.FgRed, GetBranchTextStyle("fix/ISSUE-1"))
+	// the fork gives a branch that matches no pattern a stable palette color
+	assert.Equal(t, *palette.ByName("main"), GetBranchTextStyle("main"))
+
+	slices.Reverse(patterns)
+	SetCustomBranches(patterns)
+	assert.Equal(t, style.FgRed, GetBranchTextStyle("feature/ISSUE-1"))
+}
+
+func TestBranchStatus(t *testing.T) {
+	oldColorLevel := color.ForceSetColorLevel(terminfo.ColorLevelMillions)
+	defer color.ForceSetColorLevel(oldColorLevel)
+
+	c := common.NewDummyCommon()
+
+	divergedBranch := func(upstreamRewritten bool) *models.Branch {
+		branch := &models.Branch{
+			Name:           "branch",
+			UpstreamRemote: "origin",
+			UpstreamBranch: "branch",
+			AheadForPull:   "3",
+			BehindForPull:  "5",
+		}
+		branch.UpstreamRewritten.Store(upstreamRewritten)
+		return branch
+	}
+
+	status := func(branch *models.Branch) string {
+		return BranchStatus(branch, types.ItemOperationNone, c.Tr, time.Time{}, c.UserConfig())
+	}
+
+	assert.Equal(t, "\x1b[33m↓5↑3\x1b[0m", status(divergedBranch(false)))
+	assert.Equal(t, "\x1b[33;2m↓5↑3\x1b[0m", status(divergedBranch(true)),
+		"a branch whose upstream was rewritten should be dimmed")
 }

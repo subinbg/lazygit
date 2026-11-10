@@ -2,6 +2,7 @@ package prettydiff
 
 import (
 	"io"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -110,11 +111,90 @@ func TestRendererStylesEmphasisAndFill(t *testing.T) {
 	assert.Equal(t, "      1 │+abc", plain.Add(1, "abc", []Span{{1, 2}}, true))
 }
 
+// format returns the pretty layout of input as it shows on screen, i.e.
+// without the records stating which line each row shows (see formatWithRecords).
 func format(t *testing.T, input string) string {
+	t.Helper()
+	return recordRegexp.ReplaceAllString(formatWithRecords(t, input), "")
+}
+
+func formatWithRecords(t *testing.T, input string) string {
 	t.Helper()
 	out, err := io.ReadAll(NewReader(strings.NewReader(input), ThemeByName("dark")))
 	assert.NoError(t, err)
 	return string(out)
+}
+
+var recordRegexp = regexp.MustCompile(`\x1b\]1717;([^\x07]*)\x07`)
+
+// records returns, for each row of a rendering, the payload of the record it
+// starts with, or "" for a row without one.
+func records(rendering string) []string {
+	rows := strings.Split(strings.TrimSuffix(rendering, "\n"), "\n")
+	result := make([]string, len(rows))
+	for i, row := range rows {
+		if match := recordRegexp.FindStringSubmatch(row); match != nil && strings.HasPrefix(row, match[0]) {
+			result[i] = match[1]
+		}
+	}
+	return result
+}
+
+func TestReaderStatesTheLineOfEveryRow(t *testing.T) {
+	oldColorLevel := color.ForceSetColorLevel(terminfo.ColorLevelNone)
+	defer color.ForceSetColorLevel(oldColorLevel)
+
+	input := strings.Join([]string{
+		"commit abc",
+		"",
+		"diff --git a/main.go b/main.go",
+		"index 1234567..89abcde 100644",
+		"--- a/main.go",
+		"+++ b/main.go",
+		"@@ -10,4 +10,4 @@ func main() {",
+		" a",
+		"-b",
+		"-c",
+		"+B",
+		"+C",
+		" d",
+		"\\ No newline at end of file",
+		"diff --git a/old name.txt b/old name.txt",
+		"deleted file mode 100644",
+		"index e69de29..0000000",
+		"--- a/old name.txt\t",
+		"+++ /dev/null",
+		"@@ -1 +0,0 @@",
+		"-gone",
+		"diff --git \"a/t\\303\\251st\" \"b/t\\303\\251st\"",
+		"new file mode 100644",
+		"index 0000000..e69de29",
+		"Submodule sub 1111111..2222222:",
+		"",
+	}, "\n")
+
+	assert.Equal(t, []string{
+		"",                    // commit abc
+		"",                    // (empty line)
+		"1;f;;;main.go",       // main.go  +2 −2
+		"1;h;10;;main.go",     // @@ -10,4 +10,4 @@
+		"1;c;10;;main.go",     //  a
+		"1;d;11;11;main.go",   // -b
+		"1;d;11;12;main.go",   // -c
+		"1;a;11;;main.go",     // +B
+		"1;a;12;;main.go",     // +C
+		"1;c;13;;main.go",     //  d
+		"",                    // no newline marker
+		"",                    // (separator)
+		"1;f;;;old name.txt",  // old name.txt  +0 −1
+		"",                    // deleted file
+		"1;h;0;;old name.txt", // @@ -1 +0,0 @@
+		"1;d;0;1;old name.txt",
+		"",           // (separator)
+		"1;f;;;tést", // tést  +0 −0
+		"",           // new file
+		"1;f;;;sub",  // Submodule sub
+	}, records(formatWithRecords(t, input)))
 }
 
 func TestReaderPassesNonDiffOutputThrough(t *testing.T) {
@@ -236,5 +316,5 @@ func TestReaderReadsInSmallChunks(t *testing.T) {
 		}
 		assert.NoError(t, err)
 	}
-	assert.Equal(t, format(t, input), string(out))
+	assert.Equal(t, formatWithRecords(t, input), string(out))
 }

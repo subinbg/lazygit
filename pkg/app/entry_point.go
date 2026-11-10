@@ -156,9 +156,6 @@ func Start(buildInfo *BuildInfo, integrationTest integrationTypes.IntegrationTes
 		// their expectations. A test can still opt in through SetupConfig.
 		config.ApplyUpstreamDefaults(appConfig.GetUserConfig())
 		integrationTest.SetupConfig(appConfig)
-		// Set this to true so that integration tests don't have to explicitly deal with the hunk
-		// staging hint:
-		appConfig.GetAppState().DidShowHunkStagingHint = true
 
 		// Preserve the changes that the test setup just made to the config, so
 		// they don't get lost when we reload the config while running the test
@@ -173,11 +170,11 @@ func Start(buildInfo *BuildInfo, integrationTest integrationTypes.IntegrationTes
 	}
 
 	if cliArgs.Profile {
-		go func() {
+		go utils.Safe(func() {
 			if err := http.ListenAndServe("localhost:6060", nil); err != nil {
 				log.Fatal(err)
 			}
-		}()
+		})
 	}
 
 	parsedGitArg := parseGitArg(cliArgs.GitArg)

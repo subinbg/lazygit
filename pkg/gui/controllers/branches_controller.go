@@ -7,7 +7,6 @@ import (
 
 	"github.com/jesseduffield/lazygit/pkg/commands/git_commands"
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
-	"github.com/jesseduffield/lazygit/pkg/gocui"
 	"github.com/jesseduffield/lazygit/pkg/gui/context"
 	"github.com/jesseduffield/lazygit/pkg/gui/controllers/helpers"
 	"github.com/jesseduffield/lazygit/pkg/gui/presentation"
@@ -144,8 +143,8 @@ func (self *BranchesController) GetKeybindings(opts types.KeybindingsOpts) []*ty
 		},
 		{
 			Keys:              opts.GetKeys(opts.Config.Branches.FastForward),
-			Handler:           self.withItem(self.fastForward),
-			GetDisabledReason: self.require(self.singleItemSelected(self.branchIsReal)),
+			Handler:           self.withItems(self.fastForward),
+			GetDisabledReason: self.require(self.itemRangeSelected(self.branchesAreReal)),
 			Description:       self.c.Tr.FastForward,
 			Tooltip:           self.c.Tr.FastForwardTooltip,
 		},
@@ -204,11 +203,13 @@ func (self *BranchesController) GetOnRenderToMain() func() {
 			if branch == nil {
 				task = types.NewRenderStringTask(self.c.Tr.NoBranchesThisRepo)
 			} else {
-				prefix := ""
-				pr, ok := self.c.Model().PullRequestsMap[branch.Name]
+				var prefix types.Prefix
+				pr, ok := self.c.Helpers().Host.PullRequestForBranch(branch.Name)
 				if ok && presentation.ShouldShowPrForBranch(pr, branch.Name, self.c.UserConfig()) {
-					prefix = presentation.FormatPullRequestHeader(pr, self.c.Tr)
-					prefix += strings.Repeat("─", self.c.Contexts().Normal.GetView().InnerWidth()) + "\n"
+					header := presentation.FormatPullRequestHeader(pr, self.c.Tr)
+					prefix = types.PrefixForWidth(func(width int) string {
+						return header + strings.Repeat("─", width) + "\n"
+					})
 				}
 
 				if self.c.UserConfig().Gui.MainViewCommitGraph {
@@ -217,7 +218,7 @@ func (self *BranchesController) GetOnRenderToMain() func() {
 					task = graphTask
 				} else {
 					cmdObj := self.c.Git().Branch.GetGraphCmdObj(branch.FullRefName())
-					task = types.NewRunPtyTaskWithPrefix(cmdObj.GetCmd(), prefix)
+					task = types.NewRunDiffRendererTaskWithPrefix(cmdObj.GetCmd(), prefix)
 				}
 			}
 
@@ -468,7 +469,7 @@ func (self *BranchesController) handleCreatePullRequestMenu(selectedBranch *mode
 
 func (self *BranchesController) getPullRequestURL() (string, error) {
 	branch := self.context().GetSelected()
-	if pr, ok := self.c.Model().PullRequestsMap[branch.Name]; ok {
+	if pr, ok := self.c.Helpers().Host.PullRequestForBranch(branch.Name); ok {
 		return pr.Url, nil
 	}
 
@@ -660,54 +661,23 @@ func (self *BranchesController) rebase(branch *models.Branch) error {
 	return self.c.Helpers().MergeAndRebase.RebaseOntoRef(branch.Name)
 }
 
-func (self *BranchesController) fastForward(branch *models.Branch) error {
-	if !branch.IsTrackingRemote() {
+func (self *BranchesController) fastForward(branches []*models.Branch) error {
+	if !lo.EveryBy(branches, func(branch *models.Branch) bool { return branch.IsTrackingRemote() }) {
 		return errors.New(self.c.Tr.FwdNoUpstream)
 	}
-	if !branch.RemoteBranchStoredLocally() {
+	if !lo.EveryBy(branches, func(branch *models.Branch) bool { return branch.RemoteBranchStoredLocally() }) {
 		return errors.New(self.c.Tr.FwdNoLocalUpstream)
 	}
-	if branch.IsAheadForPull() {
+	// A branch that is only ahead has nothing to fast-forward to. One that is
+	// both ahead and behind may still be reset to its upstream, so let the
+	// helper look into it.
+	if lo.SomeBy(branches, func(branch *models.Branch) bool {
+		return branch.IsAheadForPull() && !branch.IsBehindForPull()
+	}) {
 		return errors.New(self.c.Tr.FwdCommitsToPush)
 	}
 
-	action := self.c.Tr.Actions.FastForwardBranch
-	worktree, ok := self.worktreeForBranch(branch)
-
-	return self.c.WithInlineStatus(branch, types.ItemOperationFastForwarding, context.LOCAL_BRANCHES_CONTEXT_KEY, func(task gocui.Task) error {
-		if ok {
-			self.c.LogAction(action)
-
-			worktreeGitDir := ""
-			worktreePath := ""
-			// if it is the current worktree path, no need to specify the path
-			if !worktree.IsCurrent {
-				worktreeGitDir = worktree.GitDir
-				worktreePath = worktree.Path
-			}
-
-			err := self.c.Git().Sync.Pull(
-				task,
-				git_commands.PullOptions{
-					RemoteName:      branch.UpstreamRemote,
-					BranchName:      branch.UpstreamBranch,
-					FastForwardOnly: true,
-					WorktreeGitDir:  worktreeGitDir,
-					WorktreePath:    worktreePath,
-				},
-			)
-			self.c.RefreshFromWorker(types.RefreshOptions{})
-			return err
-		}
-
-		self.c.LogAction(action)
-
-		err := self.c.Git().Sync.FastForward(
-			task, branch.Name, branch.UpstreamRemote, branch.UpstreamBranch,
-		)
-		self.c.RefreshFromWorker(types.RefreshOptions{Scope: []types.RefreshableView{types.BRANCHES}})
-		return err
-	})
+	return self.c.Helpers().BranchesHelper.FastForwardBranches(branches)
 }
 
 func (self *BranchesController) createTag(branch *models.Branch) error {
@@ -892,15 +862,11 @@ func (self *BranchesController) branchIsReal(branch *models.Branch) *types.Disab
 }
 
 func (self *BranchesController) branchHasPR(branch *models.Branch) *types.DisabledReason {
-	if _, ok := self.c.Model().PullRequestsMap[branch.Name]; !ok {
-		return &types.DisabledReason{Text: self.c.Tr.NoPullRequestForBranch, ShowErrorInPanel: true}
-	}
-
-	return nil
+	return self.c.Helpers().Host.NoPullRequestDisabledReason(branch.Name)
 }
 
 func (self *BranchesController) openPRInBrowser(branch *models.Branch) error {
-	pr, ok := self.c.Model().PullRequestsMap[branch.Name]
+	pr, ok := self.c.Helpers().Host.PullRequestForBranch(branch.Name)
 	if !ok {
 		// Should be guarded against by the DisabledReason check, but be defensive in case
 		// PullRequestsMap was updated concurrently by a background refresh

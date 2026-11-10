@@ -90,6 +90,13 @@ func (r *Reader) processLine(line string) {
 		r.section = []string{line}
 		return
 	}
+	if match := submoduleLineRegexp.FindStringSubmatch(plain); match != nil {
+		// a submodule's line is its part of the diff, the way a file's diff
+		// is; it ends the file before it
+		r.flushSection()
+		r.emit(record(recordFileHeader, 0, 0, match[1]) + line)
+		return
+	}
 	if r.inSection {
 		r.section = append(r.section, line)
 		return
@@ -152,6 +159,7 @@ func FormatSection(rawLines []string, theme Theme, separate bool) []string {
 
 	path, metas := ParseExtendedHeader(first, lines[1:hunkStart])
 	hunks := parseHunks(lines[hunkStart:])
+	recPath := recordPath(lines[:hunkStart])
 
 	added, removed, maxLine := 0, 0, 0
 	for _, h := range hunks {
@@ -166,13 +174,13 @@ func FormatSection(rawLines []string, theme Theme, separate bool) []string {
 	if separate {
 		result = append(result, renderer.Blank())
 	}
-	result = append(result, renderer.FileHeader(path, added, removed))
+	result = append(result, record(recordFileHeader, 0, 0, recPath)+renderer.FileHeader(path, added, removed))
 	for _, meta := range metas {
 		result = append(result, renderer.Meta(meta))
 	}
 	for _, h := range hunks {
-		result = append(result, renderer.HunkHeader(h.header))
-		result = append(result, renderHunkBody(renderer, h.lines, h.oldStart, h.newStart)...)
+		result = append(result, record(recordHunkHeader, h.newStart, 0, recPath)+renderer.HunkHeader(h.header))
+		result = append(result, renderHunkBody(renderer, h.lines, h.oldStart, h.newStart, recPath)...)
 	}
 	return result
 }
@@ -295,7 +303,9 @@ type blockLine struct {
 	text   string
 }
 
-func renderHunkBody(renderer *Renderer, lines []string, oldStart int, newStart int) []string {
+// renderHunkBody renders the lines of a hunk, each with the record of the line of
+// path it shows.
+func renderHunkBody(renderer *Renderer, lines []string, oldStart int, newStart int, path string) []string {
 	result := make([]string, 0, len(lines))
 	oldNo, newNo := oldStart, newStart
 
@@ -318,11 +328,11 @@ func renderHunkBody(renderer *Renderer, lines []string, oldStart int, newStart i
 		for _, l := range block {
 			switch l.marker {
 			case '-':
-				result = append(result, renderer.Del(oldNo, l.text, delSpans[di], false))
+				result = append(result, record(recordDeleted, newNo, oldNo, path)+renderer.Del(oldNo, l.text, delSpans[di], false))
 				di++
 				oldNo++
 			case '+':
-				result = append(result, renderer.Add(newNo, l.text, addSpans[ai], false))
+				result = append(result, record(recordAdded, newNo, 0, path)+renderer.Add(newNo, l.text, addSpans[ai], false))
 				ai++
 				newNo++
 			default:
@@ -350,7 +360,7 @@ func renderHunkBody(renderer *Renderer, lines []string, oldStart int, newStart i
 			}
 		case ' ':
 			flushBlock()
-			result = append(result, renderer.Context(oldNo, newNo, text))
+			result = append(result, record(recordContext, newNo, 0, path)+renderer.Context(oldNo, newNo, text))
 			oldNo++
 			newNo++
 		default:

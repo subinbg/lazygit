@@ -9,6 +9,7 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/commands/git_commands"
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 	"github.com/jesseduffield/lazygit/pkg/gui/presentation"
+	"github.com/jesseduffield/lazygit/pkg/gui/presentation/graph"
 	"github.com/jesseduffield/lazygit/pkg/gui/style"
 	"github.com/jesseduffield/lazygit/pkg/gui/types"
 	"github.com/jesseduffield/lazygit/pkg/utils"
@@ -54,6 +55,7 @@ func (self *LogGraphHelper) task(refName string, refForPushedStatus models.Ref, 
 	hashPool := self.c.Model().HashPool
 	hasRebaseUpdateRefsConfig := self.c.Git().Config.GetRebaseUpdateRefs()
 	userConfig := self.c.UserConfig()
+	symbolSet := self.graphSymbolSet()
 
 	if all {
 		if branch, ok := lo.Find(branches, func(b *models.Branch) bool { return b.Name == checkedOutBranch }); ok {
@@ -107,6 +109,7 @@ func (self *LogGraphHelper) task(refName string, refForPushedStatus models.Ref, 
 			0,
 			len(commits),
 			true,
+			symbolSet,
 			git_commands.NewNullBisectInfo(),
 			presentation.CommitListOpts{},
 		)
@@ -120,4 +123,18 @@ func (self *LogGraphHelper) task(refName string, refForPushedStatus models.Ref, 
 	}
 
 	return types.NewRenderFuncTask(key, render)
+}
+
+// graphSymbolSet returns the symbols the classic graph is drawn with, as the
+// commits panel chooses them (see gui.commitGraphStyle).
+func (self *LogGraphHelper) graphSymbolSet() graph.SymbolSet {
+	switch self.c.UserConfig().Gui.CommitGraphStyle {
+	case "detailed":
+		return graph.BranchDrawingSymbols
+	case "auto":
+		if graph.TerminalDrawsBranchDrawingSymbols(self.c.GocuiGui().Terminal()) {
+			return graph.BranchDrawingSymbols
+		}
+	}
+	return graph.BoxDrawingSymbols
 }
