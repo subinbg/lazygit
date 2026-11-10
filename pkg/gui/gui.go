@@ -1000,6 +1000,19 @@ func (gui *Gui) Run(startArgs appTypes.StartArgs) error {
 
 	gui.g.OnSearchEscape = func() error { gui.helpers.Search.Cancel(); return nil }
 
+	// After dragging a scrollbar, do what a scroll with the mouse wheel does.
+	gui.g.OnScrollbarScroll = func(view *gocui.View) {
+		if view == gui.Views.MergeConflicts {
+			gui.State.Contexts.MergeConflicts.SetUserScrolling(true)
+		}
+		gui.readLinesToFillView(view)
+		if ctx, ok := gui.helpers.View.ContextForView(view.Name()); ok {
+			if listContext, ok := ctx.(types.IListContext); ok && listContext.RenderOnlyVisibleLines() {
+				listContext.HandleRender()
+			}
+		}
+	}
+
 	gui.g.SetManager(gocui.ManagerFunc(gui.layout))
 
 	if err := gui.createAllViews(); err != nil {

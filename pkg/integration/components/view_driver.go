@@ -1047,3 +1047,19 @@ func expectedContentFromMatchers(matchers []*TextMatcher) string {
 		return matcher.name()
 	}), "\n")
 }
+
+// InnerSize returns the width and height of the view's content area.
+func (self *ViewDriver) InnerSize() (width int, height int) {
+	self.t.gui.OnUIThreadAndWait(func() {
+		view := self.getView()
+		width, height = view.InnerWidth(), view.InnerHeight()
+	})
+	return width, height
+}
+
+// DragScrollbar drags the view's scrollbar, on the right edge of its frame, from
+// one row of the view's content area to another.
+func (self *ViewDriver) DragScrollbar(fromY, toY int) *ViewDriver {
+	scrollbarX, _ := self.InnerSize()
+	return self.ClickAndHold(scrollbarX, fromY).MouseMove(scrollbarX, toY).MouseRelease()
+}

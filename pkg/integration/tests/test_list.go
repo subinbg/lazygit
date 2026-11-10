@@ -668,6 +668,7 @@ var tests = []*components.IntegrationTest{
 	ui.CommitsNotFirstTab,
 	ui.DisableSwitchTabWithPanelJumpKeys,
 	ui.DragBeyondViewport,
+	ui.DragScrollbar,
 	ui.EmptyMenu,
 	ui.FilteringScrollsSelectionIntoView,
 	ui.FindBaseCommitForFixupScrollsIntoView,

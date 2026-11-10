@@ -130,6 +130,10 @@ mirrors upstream. Everything the fork adds for itself lives in `fork/` and
   focus and the selected diff lines alone: a press that starts a text selection acts as a click
   (focusing the panel, selecting the clicked diff line) only when the button is released without
   a drag. Config: `gui.mouseTextSelection` (default `true`).
+- **Scrollbars** (`pkg/gocui/scrollbar.go`): dragging a view's scrollbar (the thumb on the
+  right edge of its frame) scrolls that view, and pressing the track elsewhere moves the
+  thumb's middle there. It scrolls the way the mouse wheel does, without moving the view's
+  selection or the focus.
 - **Stable half-screen layout**: clicking a main panel (or focusing it with the
   focus-main-view key) in half-screen mode keeps the side panels at their size instead of
   collapsing them; only full-screen mode gives the main panel the whole screen. Config:

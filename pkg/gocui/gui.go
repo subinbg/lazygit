@@ -209,6 +209,11 @@ type Gui struct {
 
 	ShouldHandleMouseEvent func(view *View, key KeyName) bool
 
+	// OnScrollbarScroll, if set, is called after dragging a view's scrollbar
+	// scrolled it, so that the client can do what it does after any scroll
+	// (e.g. render the lines that came into view, or read more of them).
+	OnScrollbarScroll func(view *View)
+
 	screen         tcell.Screen
 	suspendedMutex sync.Mutex
 	suspended      bool
@@ -224,6 +229,8 @@ type Gui struct {
 	lastHoverView        *View
 	mouseCapture         *View
 	mouseGestureCanceled bool
+	// the drag of a view's scrollbar in progress, if any
+	scrollbarDrag *scrollbarDrag
 
 	// uiThreadID is the goroutine id of the main event loop, recorded when
 	// MainLoop starts. IsUIThread compares against it. Written once, read from
@@ -730,6 +737,7 @@ func (g *Gui) releaseMouseCapture() {
 // gesture until the mouse button is released.
 func (g *Gui) CancelMouseCapture() {
 	g.releaseMouseCapture()
+	g.scrollbarDrag = nil
 	g.mouseGestureCanceled = true
 }
 
@@ -1791,6 +1799,25 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 				break
 			}
 		}
+
+		// Dragging a scrollbar scrolls its view and nothing else: the gesture
+		// moves no cursor or focus, and runs no bindings of the view.
+		if g.scrollbarDrag != nil {
+			switch {
+			case ev.Key.KeyName() == MouseRelease:
+				g.scrollbarDrag = nil
+				g.releaseMouseCapture()
+			case ev.Key.KeyName() == MouseLeft && ev.Key.Mod()&ModMotion != 0:
+				g.dragScrollbarTo(my)
+			}
+			return nil
+		}
+		if ev.Key.KeyName() == MouseLeft && ev.Key.Mod() == ModNone && v.isOnScrollbar(mx, my) &&
+			(g.ShouldHandleMouseEvent == nil || g.ShouldHandleMouseEvent(v, MouseLeft)) {
+			g.startScrollbarDrag(v, my)
+			return nil
+		}
+
 		if ev.Key.KeyName() == MouseRelease {
 			g.releaseMouseCapture()
 		}
