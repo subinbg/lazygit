@@ -135,6 +135,8 @@ M  file1
 	for _, s := range scenarios {
 		t.Run(s.name, func(t *testing.T) {
 			common := common.NewDummyCommon()
+			// written against upstream's defaults, without the fork's sections
+			config.ApplyUpstreamDefaults(common.UserConfig())
 			common.UserConfig().Gui.ShowRootItemInFileTree = s.showRootItem
 			viewModel := filetree.NewFileTree(func() []*models.File { return s.files }, common, true)
 			viewModel.SetTree()

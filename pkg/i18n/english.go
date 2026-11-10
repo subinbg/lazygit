@@ -758,6 +758,7 @@ type TranslationSet struct {
 	ShowingFirstNCommits                  string
 	SelectionCopiedToClipboard            string
 	NoTextSelected                        string
+	NotAvailableOnFilesSection            string
 	CopySelectedTextToClipboard           string
 	RemoteOptionsTitle                    string
 	ViewRemoteOptions                     string
@@ -1989,6 +1990,7 @@ func EnglishTranslationSet() *TranslationSet {
 		ShowingFirstNCommits:                     "Showing the first %d commits",
 		SelectionCopiedToClipboard:               "Selection copied to clipboard",
 		NoTextSelected:                           "No text selected. Drag with the mouse to select some.",
+		NotAvailableOnFilesSection:               "Not available on a section. Select a file or directory in it.",
 		CopySelectedTextToClipboard:              "Copy selected text to clipboard",
 		RemoteOptionsTitle:                       "Remote options",
 		ViewRemoteOptions:                        "View remote options",

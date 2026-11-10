@@ -104,14 +104,14 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 		{
 			Keys:              opts.GetKeys(opts.Config.Universal.OpenFile),
 			Handler:           self.Open,
-			GetDisabledReason: self.require(self.singleItemSelected()),
+			GetDisabledReason: self.require(self.singleItemSelected(), self.notASection),
 			Description:       self.c.Tr.OpenFile,
 			Tooltip:           self.c.Tr.OpenFileTooltip,
 		},
 		{
 			Keys:              opts.GetKeys(opts.Config.Files.IgnoreFile),
 			Handler:           self.withItem(self.ignoreOrExcludeMenu),
-			GetDisabledReason: self.require(self.singleItemSelected()),
+			GetDisabledReason: self.require(self.singleItemSelected(), self.notASection),
 			Description:       self.c.Tr.Actions.IgnoreExcludeFile,
 			OpensMenu:         true,
 		},
@@ -180,7 +180,7 @@ func (self *FilesController) GetKeybindings(opts types.KeybindingsOpts) []*types
 		{
 			Keys:              opts.GetKeys(opts.Config.Universal.OpenDiffTool),
 			Handler:           self.withItem(self.openDiffTool),
-			GetDisabledReason: self.require(self.singleItemSelected()),
+			GetDisabledReason: self.require(self.singleItemSelected(), self.notASection),
 			Description:       self.c.Tr.OpenDiffTool,
 		},
 		{
@@ -627,7 +627,7 @@ func (self *FilesController) pressWithLock(selectedNodes []*filetree.FileNode) e
 	// When filtering, expand directory nodes to individual visible file paths
 	// so that only filtered files are staged/unstaged.
 	toPaths := func(nodes []*filetree.FileNode) []string {
-		if self.context().IsFiltering() {
+		if self.actsOnListedFilesOnly() {
 			var paths []string
 			for _, node := range nodes {
 				_ = node.ForEachFile(func(file *models.File) error {
@@ -652,7 +652,7 @@ func (self *FilesController) pressWithLock(selectedNodes []*filetree.FileNode) e
 	}
 
 	unstage := func(nodes []*filetree.FileNode) error {
-		if self.context().IsFiltering() {
+		if self.actsOnListedFilesOnly() {
 			// When filtering, only unstage visible files
 			return self.unstageFilteredFiles(nodes)
 		}
@@ -702,6 +702,12 @@ func (self *FilesController) press(nodes []*filetree.FileNode) error {
 }
 
 func (self *FilesController) pathsForDiff(node *filetree.FileNode) []string {
+	if self.context().InSections() && !node.IsFile() {
+		// A directory of a section lists only the files of that section.
+		return lo.FlatMap(node.GetLeaves(), func(leaf *filetree.Node[models.File], _ int) []string {
+			return leaf.File.Names()
+		})
+	}
 	return diffPathsForNode(
 		node.Raw(), self.context().GetRoot().Raw(), self.c.Model().Files, self.context().IsFiltering())
 }
@@ -729,6 +735,23 @@ func (self *FilesController) unstageFilteredFiles(nodes []*filetree.FileNode) er
 		if err := self.c.Git().WorkingTree.UnstageTrackedFiles(trackedPaths); err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+// actsOnListedFilesOnly reports whether staging or unstaging a directory acts on
+// the files listed under it rather than on the directory: when a text filter
+// hides some of them, or the tree is split into sections, where a directory of
+// one section doesn't list the files of the other.
+func (self *FilesController) actsOnListedFilesOnly() bool {
+	return self.context().IsFiltering() || self.context().InSections()
+}
+
+// notASection disables the commands that act on a path for the node of a section
+// of the tree (see filetree.BuildSectionedTreeFromFiles), which has none.
+func (self *FilesController) notASection() *types.DisabledReason {
+	if node := self.context().GetSelected(); node != nil && node.IsSection() {
+		return &types.DisabledReason{Text: self.c.Tr.NotAvailableOnFilesSection}
 	}
 	return nil
 }
@@ -1484,7 +1507,7 @@ func (self *FilesController) openCopyMenu() error {
 			self.c.Toast(self.c.Tr.FileNameCopiedToast)
 			return nil
 		},
-		DisabledReason: self.require(self.singleItemSelected())(),
+		DisabledReason: self.require(self.singleItemSelected(), self.notASection)(),
 		Keys:           menuKey('n'),
 	}
 	copyRelativePathItem := &types.MenuItem{
@@ -1496,7 +1519,7 @@ func (self *FilesController) openCopyMenu() error {
 			self.c.Toast(self.c.Tr.FilePathCopiedToast)
 			return nil
 		},
-		DisabledReason: self.require(self.singleItemSelected())(),
+		DisabledReason: self.require(self.singleItemSelected(), self.notASection)(),
 		Keys:           menuKey('p'),
 	}
 	copyAbsolutePathItem := &types.MenuItem{
@@ -1512,16 +1535,20 @@ func (self *FilesController) openCopyMenu() error {
 			self.c.Toast(self.c.Tr.FilePathCopiedToast)
 			return nil
 		},
-		DisabledReason: self.require(self.singleItemSelected())(),
+		DisabledReason: self.require(self.singleItemSelected(), self.notASection)(),
 		Keys:           menuKey('P'),
 	}
 	copyFileDiffItem := &types.MenuItem{
 		Label:   self.c.Tr.CopySelectedDiff,
 		Tooltip: self.c.Tr.CopyFileDiffTooltip,
 		OnPress: func() error {
-			path := self.context().GetSelectedPath()
+			args := []string{"--", self.context().GetSelectedPath()}
+			if self.context().InSections() {
+				// a directory of a section lists only some of the files in it
+				args = append([]string{"--"}, self.pathsForDiff(node)...)
+			}
 			hasStaged := self.hasPathStagedChanges(node)
-			diff, err := self.c.Git().Diff.GetDiff(hasStaged, "--", path)
+			diff, err := self.c.Git().Diff.GetDiff(hasStaged, args...)
 			if err != nil {
 				return err
 			}

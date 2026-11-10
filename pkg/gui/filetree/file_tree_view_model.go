@@ -154,6 +154,16 @@ func (self *FileTreeViewModel) findNewSelectedIdx(prevNodes []*FileNode, currNod
 	for _, prevNode := range prevNodes {
 		selectedPaths := getPaths(prevNode)
 
+		// A directory with files in both sections of a sectioned tree appears
+		// in both; stay in the section the node was in, if it's still there.
+		if prevNode != nil && strings.HasPrefix(prevNode.GetInternalPath(), sectionMarker) {
+			if _, idx, found := lo.FindIndexOf(currNodes, func(node *FileNode) bool {
+				return node.GetInternalPath() == prevNode.GetInternalPath()
+			}); found {
+				return idx
+			}
+		}
+
 		for idx, node := range currNodes {
 			paths := getPaths(node)
 

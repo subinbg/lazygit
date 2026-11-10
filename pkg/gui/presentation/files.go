@@ -125,6 +125,10 @@ func getFileLine(
 	showRootItem bool,
 	tr *i18n.TranslationSet,
 ) string {
+	if node.IsSection() {
+		return fileTreeSectionLine(node, isCollapsed, tr)
+	}
+
 	name := fileNameAtDepth(node, treeDepth, showRootItem)
 	output := ""
 

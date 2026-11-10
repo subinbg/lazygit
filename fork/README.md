@@ -67,11 +67,15 @@ mirrors upstream. Everything the fork adds for itself lives in `fork/` and
 
 ### Working tree
 
-- **Staging sections**: the files view lists files with unstaged changes first and fully
-  staged files after, under "Unstaged files (n)" and "Staged files (m)" headers. A file with
-  both kinds of changes sits in the unstaged section with its `MM` status. Sections only apply
-  to the flat file view, which is now the default (`gui.showFileTree: false`; `~` toggles the
-  tree). Config: `gui.showStagingSectionsInFilesView`.
+- **Staging sections** (`pkg/gui/filetree/sections.go`): the files view lists files with
+  unstaged changes first and fully staged files after, under "Unstaged files (n)" and "Staged
+  files (m)". A file with both kinds of changes sits in the unstaged section with its `MM`
+  status. In the tree view (the default; `~` toggles the flat list) each section is a
+  directory tree of its own under a node of its own, so a directory with files in both
+  sections appears in both. Space on a directory stages or unstages the files listed under it,
+  and on a section's node all the files of the section; a section collapses like a directory.
+  The commands that act on a path (open, ignore, copy the path, the diff tool) are disabled on
+  a section's node. Config: `gui.showStagingSectionsInFilesView`.
 - **WIP row** (`pkg/gui/presentation/working_tree.go`): when the working tree has changes,
   the commits view starts with `◌ WIP · 1 staged · 2 unstaged · 1 untracked`, like
   GitKraken's work-in-progress node. It re-renders whenever the files refresh. Config:

@@ -1161,7 +1161,7 @@
         "showFileTree": {
           "type": "boolean",
           "description": "If true, display the files in the file views as a tree. If false, display the files as a flat list.\nThis can be toggled from within Lazygit with the '`' key, but that will not change the default.",
-          "default": false
+          "default": true
         },
         "showRootItemInFileTree": {
           "type": "boolean",
@@ -1280,7 +1280,7 @@
         },
         "showStagingSectionsInFilesView": {
           "type": "boolean",
-          "description": "If true, the flat (non-tree) files view lists files with unstaged changes first and fully staged files after, each under a section header with a count, GitKraken-style.",
+          "description": "If true, the files view lists files with unstaged changes first and fully staged files after, each under a section header with a count, GitKraken-style. In the tree view each section is a directory tree of its own, whose directories stage or unstage the files listed under them.",
           "default": true
         },
         "showWorkingTreeInCommitsView": {

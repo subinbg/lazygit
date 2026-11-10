@@ -2,6 +2,7 @@ package filetree
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jesseduffield/generics/set"
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
@@ -53,6 +54,7 @@ type IFileTree interface {
 	GetRoot() *FileNode
 	SetTextFilter(filter string, useFuzzySearch bool)
 	GetTextFilter() string
+	InSections() bool
 }
 
 type FileTree struct {
@@ -89,7 +91,21 @@ func (self *FileTree) InTreeMode() bool {
 }
 
 func (self *FileTree) ExpandToPath(path string) {
+	if self.InSections() && !strings.HasPrefix(path, sectionMarker) {
+		for _, sectionedPath := range sectionedPaths(path) {
+			self.collapsedPaths.ExpandToPath(sectionedPath)
+		}
+		return
+	}
 	self.collapsedPaths.ExpandToPath(path)
+}
+
+// InSections reports whether the tree is split into an unstaged and a staged
+// section (see BuildSectionedTreeFromFiles): in the tree view, when nothing
+// is filtered by status.
+func (self *FileTree) InSections() bool {
+	return self.showTree && self.filter == DisplayAll &&
+		self.common.UserConfig().Gui.ShowStagingSectionsInFilesView
 }
 
 func (self *FileTree) getFilesForDisplay() []*models.File {
@@ -164,6 +180,14 @@ func (self *FileTree) GetFile(path string) *models.File {
 
 func (self *FileTree) GetIndexForPath(path string) (int, bool) {
 	index, found := self.tree.GetIndexForPath(path, self.collapsedPaths)
+	if !found && self.InSections() && !strings.HasPrefix(path, sectionMarker) {
+		// a path from outside the tree, which doesn't say which section it's in
+		for _, sectionedPath := range sectionedPaths(path) {
+			if index, found = self.tree.GetIndexForPath(sectionedPath, self.collapsedPaths); found {
+				break
+			}
+		}
+	}
 	return index - 1, found
 }
 
@@ -200,7 +224,9 @@ func (self *FileTree) SetTree() {
 	guiConfig := self.common.UserConfig().Gui
 	showRootItem := guiConfig.ShowRootItemInFileTree
 	cmp := NodeSortComparator[models.File](guiConfig.FileTreeSortOrder, guiConfig.FileTreeSortCaseSensitive)
-	if self.showTree {
+	if self.InSections() {
+		self.tree = BuildSectionedTreeFromFiles(filesForDisplay, cmp)
+	} else if self.showTree {
 		self.tree = BuildTreeFromFiles(filesForDisplay, showRootItem, cmp)
 	} else {
 		self.tree = BuildFlatTreeFromFiles(filesForDisplay, showRootItem, cmp, guiConfig.ShowStagingSectionsInFilesView)

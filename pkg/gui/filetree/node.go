@@ -52,7 +52,7 @@ func (self *Node[T]) GetFile() *T {
 // Use this for display, or when you want to perform some action on the path
 // (e.g. a git command).
 func (self *Node[T]) GetPath() string {
-	return strings.TrimPrefix(self.path, "./")
+	return logicalPath(self.path)
 }
 
 // This returns the internal path from the tree's point of view. It's the same
@@ -72,7 +72,7 @@ func (self *Node[T]) GetPaths() []string {
 	splitPath := split(self.path)
 	paths := make([]string, 0, self.CompressionLevel+1)
 	for i := 0; i <= self.CompressionLevel; i++ {
-		paths = append(paths, strings.TrimPrefix(join(splitPath[:len(splitPath)-i]), "./"))
+		paths = append(paths, logicalPath(join(splitPath[:len(splitPath)-i])))
 	}
 	return paths
 }

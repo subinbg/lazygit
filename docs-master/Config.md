@@ -262,7 +262,7 @@ gui:
   # files as a flat list.
   # This can be toggled from within Lazygit with the '`' key, but that will not
   # change the default.
-  showFileTree: false
+  showFileTree: true
 
   # If true, add a "/" root item in the file tree representing the root of the
   # repository. It is only added when necessary, i.e. when there is more than one
@@ -340,9 +340,10 @@ gui:
   # are listed together under a folder header in the branches views.
   groupBranchesByPrefix: true
 
-  # If true, the flat (non-tree) files view lists files with unstaged changes
-  # first and fully staged files after, each under a section header with a count,
-  # GitKraken-style.
+  # If true, the files view lists files with unstaged changes first and fully
+  # staged files after, each under a section header with a count, GitKraken-style.
+  # In the tree view each section is a directory tree of its own, whose
+  # directories stage or unstage the files listed under them.
   showStagingSectionsInFilesView: true
 
   # If true, a row summarising the working tree changes (staged, unstaged,

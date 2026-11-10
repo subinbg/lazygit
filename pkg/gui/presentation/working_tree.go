@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
+	"github.com/jesseduffield/lazygit/pkg/gui/filetree"
 	"github.com/jesseduffield/lazygit/pkg/gui/style"
 	"github.com/jesseduffield/lazygit/pkg/i18n"
 	"github.com/jesseduffield/lazygit/pkg/theme"
@@ -51,7 +52,21 @@ func StagingSectionSizes(files []*models.File) (unstaged int, staged int) {
 }
 
 func InUnstagedSection(file *models.File) bool {
-	return file.HasUnstagedChanges || !file.HasStagedChanges
+	return filetree.InUnstagedSection(file)
+}
+
+// fileTreeSectionLine renders the node of a section of the files tree view (see
+// filetree.BuildSectionedTreeFromFiles): "▼ Unstaged files (3)".
+func fileTreeSectionLine(node *filetree.Node[models.File], isCollapsed bool, tr *i18n.TranslationSet) string {
+	arrow := EXPANDED_ARROW
+	if isCollapsed {
+		arrow = COLLAPSED_ARROW
+	}
+	label := tr.UnstagedFilesSectionHeader
+	if node.GetInternalPath() == filetree.StagedSectionPath {
+		label = tr.StagedFilesSectionHeader
+	}
+	return theme.DefaultTextColor.SetBold().Sprintf("%s %s (%d)", arrow, label, len(node.GetLeaves()))
 }
 
 // FormatWorkingTreeRow renders the "WIP" row shown above the commits when the

@@ -184,7 +184,10 @@ func TestSetTreeKeepsSelectionAcrossCompressionChanges(t *testing.T) {
 	for _, s := range scenarios {
 		t.Run(s.name, func(t *testing.T) {
 			files := toFiles(s.filesBefore)
-			cmn := common.NewDummyCommon()
+			// written against upstream's defaults, without the fork's sections
+			userConfig := config.GetDefaultConfig()
+			config.ApplyUpstreamDefaults(userConfig)
+			cmn := common.NewDummyCommonWithUserConfigAndAppState(userConfig, nil)
 			viewModel := NewFileTreeViewModel(
 				func() []*models.File { return files },
 				cmn,

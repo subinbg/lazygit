@@ -166,6 +166,8 @@ func TestFileTreeSortOrderConfig(t *testing.T) {
 	for _, s := range scenarios {
 		t.Run(s.sortOrder+"/caseSensitive="+fmt.Sprintf("%v", s.caseSensitive), func(t *testing.T) {
 			userConfig := config.GetDefaultConfig()
+			// written against upstream's defaults, without the fork's sections
+			config.ApplyUpstreamDefaults(userConfig)
 			userConfig.Gui.ShowRootItemInFileTree = false
 			userConfig.Gui.FileTreeSortOrder = s.sortOrder
 			userConfig.Gui.FileTreeSortCaseSensitive = s.caseSensitive
