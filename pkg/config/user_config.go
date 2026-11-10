@@ -212,7 +212,7 @@ type GuiConfig struct {
 	PrettyDiffTheme string `yaml:"prettyDiffTheme" jsonschema:"enum=dark,enum=light"`
 	// If true, focusing a main panel (by clicking it, or with the focusMainView key) while in half-screen mode keeps the side panels at their size instead of collapsing them; only full-screen mode gives the main panel the whole screen.
 	KeepSidePanelsWhenMainFocused bool `yaml:"keepSidePanelsWhenMainFocused"`
-	// If true, dragging with the left mouse button in a main panel selects text, and releasing the button copies the selection to the clipboard. Clicking without dragging keeps its usual meaning.
+	// If true, dragging with the left mouse button in a main panel selects text, and releasing the button copies the selection to the clipboard. A drag that starts on the gutter of a diff's line (its line numbers, or the +/- column) selects diff lines instead. Clicking without dragging keeps its usual meaning.
 	MouseTextSelection bool `yaml:"mouseTextSelection"`
 	// If true, the Remotes tab lists every remote's branches directly, under a header per remote and grouped by prefix like local branches, instead of listing the remotes and showing a remote's branches only after entering one. Remote-level actions (fetch, add, edit, remove) are then in the remote options menu.
 	UnfoldRemotes bool `yaml:"unfoldRemotes"`

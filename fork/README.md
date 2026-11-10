@@ -108,11 +108,13 @@ mirrors upstream. Everything the fork adds for itself lives in `fork/` and
 
 ### Mouse
 
-- **Text selection**: over a main panel that shows no diff (a commit log, the status panel),
-  dragging with the left button selects text, drawn in reverse video; releasing the button
-  copies it to the clipboard and a toast confirms it, and `ctrl+o` copies the selection again.
-  Over a diff, dragging selects diff lines as in upstream. Config: `gui.mouseTextSelection`
-  (default `true`).
+- **Text selection**: dragging with the left button in a main panel selects text, drawn in
+  reverse video; releasing the button copies it to the clipboard and a toast confirms it,
+  `ctrl+o` copies the selection again, and `esc` clears it. This works over anything a main
+  panel shows, e.g. to copy a commit's hash from its header. A drag that starts on the gutter
+  of a diff's line (a pretty diff's line numbers, or the `+`/`-` column of git's own diff)
+  selects diff lines as in upstream instead, e.g. to stage them; a click still selects the
+  clicked diff line. Config: `gui.mouseTextSelection` (default `true`).
 - **Stable half-screen layout**: clicking a main panel (or focusing it with the
   focus-main-view key) in half-screen mode keeps the side panels at their size instead of
   collapsing them; only full-screen mode gives the main panel the whole screen. Config:

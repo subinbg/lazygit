@@ -370,8 +370,9 @@ gui:
   keepSidePanelsWhenMainFocused: true
 
   # If true, dragging with the left mouse button in a main panel selects text, and
-  # releasing the button copies the selection to the clipboard. Clicking without
-  # dragging keeps its usual meaning.
+  # releasing the button copies the selection to the clipboard. A drag that starts
+  # on the gutter of a diff's line (its line numbers, or the +/- column) selects
+  # diff lines instead. Clicking without dragging keeps its usual meaning.
   mouseTextSelection: true
 
   # If true, the Remotes tab lists every remote's branches directly, under a

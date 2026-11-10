@@ -102,6 +102,16 @@ func (gui *Gui) createAllViews() error {
 	gui.Views.Search.Frame = false
 	gui.Views.Search.Editor = gocui.EditorFunc(gui.searchEditor)
 
+	for _, view := range []*gocui.View{gui.Views.Main, gui.Views.Secondary} {
+		// A drag that starts on the gutter of a diff's line selects diff lines
+		// rather than text.
+		view.CanStartTextSelection = func(x, y int) bool {
+			mainContext := gui.mainContextForView(view)
+			return mainContext == nil || !mainContext.ContentIsDiff() ||
+				!gui.helpers.DiffLine.InSelectionGutter(view, x, y)
+		}
+	}
+
 	for _, view := range []*gocui.View{gui.Views.Main, gui.Views.Secondary, gui.Views.MergeConflicts} {
 		view.Wrap = true
 		view.UnderlineHyperLinksOnlyOnHover = true

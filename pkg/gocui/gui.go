@@ -1866,8 +1866,12 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 			g.captureMouse(v)
 		}
 
+		// A drag that selects text leaves the cursor where the press put it,
+		// since the cursor is the selected line of a list or diff.
+		draggingText := v.TextSelectable && v.IsSelectingText() && ev.Key.Mod()&ModMotion != 0
+
 		if !IsMouseScrollKey(ev.Key.KeyName()) && ev.Key.KeyName() != MouseRelease &&
-			!gestureIsModified {
+			!gestureIsModified && !draggingText {
 			cursorX, cursorY := newCx, newCy
 			// A captured drag can report positions outside the view; keep the
 			// view cursor inside its bounds in that case. Handlers still get
@@ -1890,7 +1894,11 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 
 		if v.TextSelectable && ev.Key.KeyName() == MouseLeft {
 			if ev.Key.Mod()&ModMotion == 0 {
-				v.StartTextSelection(newX, newY)
+				if v.CanStartTextSelection == nil || v.CanStartTextSelection(newX, newY) {
+					v.StartTextSelection(newX, newY)
+				} else {
+					v.ClearTextSelection()
+				}
 			} else if g.mouseCapture == v {
 				v.ExtendTextSelection(newX, newY)
 			}

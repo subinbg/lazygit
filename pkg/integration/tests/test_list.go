@@ -402,6 +402,8 @@ var tests = []*components.IntegrationTest{
 	main_view.DiscardLinesFromACommit,
 	main_view.DragRangeWithAutoscroll,
 	main_view.DragSelectsDiffLineRange,
+	main_view.DragTextOfACommitsDiff,
+	main_view.DragTextOrLinesOfAPrettyDiff,
 	main_view.EditClickedDiffLine,
 	main_view.EditHistoricalDiffLine,
 	main_view.EditHunkInFocusedDiff,

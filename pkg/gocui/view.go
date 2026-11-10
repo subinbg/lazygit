@@ -170,7 +170,11 @@ type View struct {
 	// left button starts a selection at the pointer, dragging extends it, and
 	// SelectedText returns it. Selected cells are drawn in reverse video.
 	TextSelectable bool
-	textSelection  *textSelection
+	// CanStartTextSelection, if set, decides whether pressing the left button
+	// at a content position starts a text selection, so that a drag from
+	// there can mean something else.
+	CanStartTextSelection func(x, y int) bool
+	textSelection         *textSelection
 
 	// If Highlight is true, Sel{Bg,Fg}Colors will be used
 	// for the line under the cursor position.
@@ -688,6 +692,12 @@ func (v *View) ExtendTextSelection(x, y int) {
 	v.textSelection.endY = max(y, 0)
 }
 
+// IsSelectingText reports whether the last press started a text selection,
+// which a drag then extends.
+func (v *View) IsSelectingText() bool {
+	return v.textSelection != nil
+}
+
 // HasTextSelection reports whether some text is selected, i.e. the selection
 // spans more than the cell it started on.
 func (v *View) HasTextSelection() bool {
@@ -724,6 +734,18 @@ func (v *View) inTextSelection(x, y int) bool {
 		return false
 	}
 	return true
+}
+
+// ViewLineText returns the text of the given view line (i.e. after wrapping).
+func (v *View) ViewLineText(y int) (string, bool) {
+	v.writeMutex.Lock()
+	defer v.writeMutex.Unlock()
+
+	v.refreshViewLinesIfNeeded()
+	if y < 0 || y >= len(v.viewLines) {
+		return "", false
+	}
+	return cells(v.viewLines[y].line).String(), true
 }
 
 // SelectedText returns the selected text. The segments of a wrapped line are
