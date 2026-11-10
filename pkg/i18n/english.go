@@ -759,6 +759,7 @@ type TranslationSet struct {
 	SelectionCopiedToClipboard            string
 	NoTextSelected                        string
 	NotAvailableOnFilesSection            string
+	EmptyFilesSection                     string
 	CopySelectedTextToClipboard           string
 	RemoteOptionsTitle                    string
 	ViewRemoteOptions                     string
@@ -1991,6 +1992,7 @@ func EnglishTranslationSet() *TranslationSet {
 		SelectionCopiedToClipboard:               "Selection copied to clipboard",
 		NoTextSelected:                           "No text selected. Drag with the mouse to select some.",
 		NotAvailableOnFilesSection:               "Not available on a section. Select a file or directory in it.",
+		EmptyFilesSection:                        "There are no files in this section.",
 		CopySelectedTextToClipboard:              "Copy selected text to clipboard",
 		RemoteOptionsTitle:                       "Remote options",
 		ViewRemoteOptions:                        "View remote options",

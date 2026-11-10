@@ -747,6 +747,16 @@ func (self *FilesController) actsOnListedFilesOnly() bool {
 	return self.context().IsFiltering() || self.context().InSections()
 }
 
+// notOnlyEmptySections disables the commands that act on the files of the
+// selection when it is the node of a section without files, which is listed
+// only to show that it is empty.
+func (self *FilesController) notOnlyEmptySections(nodes []*filetree.FileNode) *types.DisabledReason {
+	if len(nodes) > 0 && lo.EveryBy(nodes, func(node *filetree.FileNode) bool { return node.IsEmptySection() }) {
+		return &types.DisabledReason{Text: self.c.Tr.EmptyFilesSection}
+	}
+	return nil
+}
+
 // notASection disables the commands that act on a path for the node of a section
 // of the tree (see filetree.BuildSectionedTreeFromFiles), which has none.
 func (self *FilesController) notASection() *types.DisabledReason {
@@ -868,6 +878,10 @@ func (self *FilesController) conflictNeedsResolutionDialog(file *models.File) bo
 // resolved one at a time. It also disables it when the selection includes a
 // nested repository.
 func (self *FilesController) canStageSelection(nodes []*filetree.FileNode) *types.DisabledReason {
+	if disabledReason := self.notOnlyEmptySections(nodes); disabledReason != nil {
+		return disabledReason
+	}
+
 	if len(nodes) > 1 {
 		for _, node := range nodes {
 			if node.SomeFile(self.conflictNeedsResolutionDialog) {
@@ -1843,6 +1857,10 @@ func findWorktreeNode(nodes []*filetree.FileNode) *models.File {
 }
 
 func (self *FilesController) canRemove(selectedNodes []*filetree.FileNode) *types.DisabledReason {
+	if disabledReason := self.notOnlyEmptySections(selectedNodes); disabledReason != nil {
+		return disabledReason
+	}
+
 	// Return disabled if the selection contains multiple changed items and
 	// includes a submodule change or a worktree. These have menus of their own.
 	submodules := self.c.Model().Submodules

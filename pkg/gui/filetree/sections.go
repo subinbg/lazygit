@@ -35,6 +35,12 @@ func (self *Node[T]) IsSection() bool {
 	return isSectionPath(self.path)
 }
 
+// IsEmptySection reports whether the node is the node of a section without
+// any files.
+func (self *Node[T]) IsEmptySection() bool {
+	return self.IsSection() && len(self.Children) == 0
+}
+
 func isSectionPath(internalPath string) bool {
 	return strings.HasPrefix(internalPath, sectionMarker) && !strings.Contains(internalPath, "/")
 }
@@ -54,8 +60,9 @@ func logicalPath(internalPath string) string {
 }
 
 // BuildSectionedTreeFromFiles builds a tree whose top-level nodes are the
-// unstaged and the staged section (an empty section is left out), each holding
-// a directory tree of its files.
+// unstaged and the staged section, each holding a directory tree of its files.
+// Both are there as long as there are any files, so that an empty one shows
+// that it is empty.
 func BuildSectionedTreeFromFiles(
 	files []*models.File,
 	cmp func(a, b *Node[models.File]) int,
@@ -70,6 +77,9 @@ func BuildSectionedTreeFromFiles(
 	}
 
 	root := &Node[models.File]{}
+	if len(files) == 0 {
+		return root
+	}
 	for _, section := range []struct {
 		path  string
 		files []*models.File
@@ -77,9 +87,7 @@ func BuildSectionedTreeFromFiles(
 		{UnstagedSectionPath, unstaged},
 		{StagedSectionPath, staged},
 	} {
-		if len(section.files) > 0 {
-			root.Children = append(root.Children, buildSectionTree(section.path, section.files, cmp))
-		}
+		root.Children = append(root.Children, buildSectionTree(section.path, section.files, cmp))
 	}
 	return root
 }

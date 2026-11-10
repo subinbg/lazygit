@@ -49,6 +49,7 @@ var StageDirectoriesInSections = NewIntegrationTest(NewIntegrationTestArgs{
 				Equals("    MM a"),
 				Equals("     M b"),
 				Equals("   M top"),
+				Equals("▼ Staged files (0)"),
 			).
 			// The unstaged section's dir stages everything in it.
 			PressPrimaryAction().
@@ -69,12 +70,20 @@ var StageDirectoriesInSections = NewIntegrationTest(NewIntegrationTestArgs{
 				Equals("     M a"),
 				Equals("     M b"),
 				Equals("   M top"),
+				Equals("▼ Staged files (0)").IsSelected(),
 			).
+			// An empty section is listed to show that it is empty, and has nothing to
+			// stage or unstage.
+			PressPrimaryAction().
+			Tap(func() {
+				t.ExpectToast(Equals("Disabled: There are no files in this section."))
+			}).
 			// Sections collapse like directories.
 			NavigateToLine(Equals("▼ Unstaged files (3)")).
 			PressEnter().
 			Lines(
 				Equals("▶ Unstaged files (3)").IsSelected(),
+				Equals("▼ Staged files (0)"),
 			).
 			// A section has no path to open or ignore.
 			Press(keys.Files.IgnoreFile)

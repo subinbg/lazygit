@@ -41,14 +41,21 @@ func TestBuildSectionedTreeFromFiles(t *testing.T) {
 		lo.Map(nodes, func(node *Node[models.File], _ int) bool { return node.IsSection() }))
 
 	// a section is never compressed into its only directory, while that
-	// directory compresses with its own only subdirectory
+	// directory compresses with its own only subdirectory; and a section
+	// without files is still there, to show that it is empty
 	onlyStaged := BuildSectionedTreeFromFiles(
 		[]*models.File{{Path: "a/b/c", HasStagedChanges: true}},
 		NodeSortComparator[models.File]("mixed", false))
-	section := onlyStaged.Children[0]
+	assert.Len(t, onlyStaged.Children, 2)
+	assert.True(t, onlyStaged.Children[0].IsEmptySection())
+	section := onlyStaged.Children[1]
 	assert.True(t, section.IsSection())
+	assert.False(t, section.IsEmptySection())
 	assert.Equal(t, StagedSectionPath+"/a/b", section.Children[0].GetInternalPath())
 	assert.Equal(t, []string{"a/b", "a"}, section.Children[0].GetPaths())
+
+	// no files, no sections
+	assert.Empty(t, BuildSectionedTreeFromFiles(nil, NodeSortComparator[models.File]("mixed", false)).Children)
 
 	// collapsing a directory in one section leaves the other section's alone
 	collapsedPaths.Collapse(StagedSectionPath + "/dir")

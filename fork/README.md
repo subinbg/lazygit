@@ -72,7 +72,8 @@ mirrors upstream. Everything the fork adds for itself lives in `fork/` and
   files (m)". A file with both kinds of changes sits in the unstaged section with its `MM`
   status. In the tree view (the default; `~` toggles the flat list) each section is a
   directory tree of its own under a node of its own, so a directory with files in both
-  sections appears in both. Space on a directory stages or unstages the files listed under it,
+  sections appears in both. Both sections are listed whenever there are changes, an empty one
+  as "Staged files (0)". Space on a directory stages or unstages the files listed under it,
   and on a section's node all the files of the section; a section collapses like a directory.
   The commands that act on a path (open, ignore, copy the path, the diff tool) are disabled on
   a section's node. Config: `gui.showStagingSectionsInFilesView`.
