@@ -477,9 +477,10 @@ func commitListOpts(c *ContextCommon) presentation.CommitListOpts {
 	}
 }
 
-// stashesInGraph returns the stashes the commits graph shows rows for (see
-// presentation.StashRows): all of them, unless the list is one where they
-// don't belong, while rebasing or filtering, or showing a divergence.
+// stashesInGraph returns the stashes the commits graph shows rows for
+// (see presentation.StashRows):
+// all of them, unless the list is one where they don't belong,
+// while rebasing or filtering, or showing a divergence.
 func stashesInGraph(c *ContextCommon) []*models.StashEntry {
 	commits := c.Model().Commits
 	if !c.UserConfig().Gui.ShowStashesInCommitsView ||
@@ -492,8 +493,9 @@ func stashesInGraph(c *ContextCommon) []*models.StashEntry {
 	return c.Model().StashEntries
 }
 
-// showWorkingTreeRow reports whether the commits list shows the working-tree
-// row (see presentation.FormatWorkingTreeRow) above the commits.
+// showWorkingTreeRow reports
+// whether the commits list shows the working-tree row
+// (see presentation.FormatWorkingTreeRow) above the commits.
 func showWorkingTreeRow(c *ContextCommon) bool {
 	return c.UserConfig().Gui.ShowWorkingTreeInCommitsView &&
 		len(c.Model().Files) > 0 &&

@@ -20,7 +20,8 @@ var StageDirectoriesInSections = NewIntegrationTest(NewIntegrationTestArgs{
 		shell.CreateFileAndAdd("top", "1\n")
 		shell.Commit("one")
 
-		// a has staged and unstaged changes, b only staged ones, top only unstaged ones
+		// a has staged and unstaged changes, b only staged ones,
+		// top only unstaged ones
 		shell.UpdateFileAndAdd("dir/a", "2\n")
 		shell.UpdateFile("dir/a", "3\n")
 		shell.UpdateFileAndAdd("dir/b", "2\n")
@@ -38,8 +39,9 @@ var StageDirectoriesInSections = NewIntegrationTest(NewIntegrationTestArgs{
 				Equals("  ▼ dir"),
 				Equals("    M  b"),
 			).
-			// The staged section's dir has only b in it: unstaging it leaves the staged
-			// changes of a, which is listed in the other section, alone.
+			// The staged section's dir has only b in it:
+			// unstaging it leaves the staged changes of a,
+			// which is listed in the other section, alone.
 			NavigateToLine(Equals("    M  b")).
 			Press(keys.Universal.PrevItem).
 			PressPrimaryAction().
@@ -72,8 +74,8 @@ var StageDirectoriesInSections = NewIntegrationTest(NewIntegrationTestArgs{
 				Equals("   M top"),
 				Equals("▼ Staged files (0)").IsSelected(),
 			).
-			// An empty section is listed to show that it is empty, and has nothing to
-			// stage or unstage.
+			// An empty section is listed to show that it is empty,
+			// and has nothing to stage or unstage.
 			PressPrimaryAction().
 			Tap(func() {
 				t.ExpectToast(Equals("Disabled: There are no files in this section."))

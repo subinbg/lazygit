@@ -1,7 +1,9 @@
-// Package palette provides a fixed set of distinct colors used to color
-// commit-graph lanes (cyclically by lane position), the ref labels shown on
-// commits, and branch names (stably by name hash, so a branch keeps its color
-// across renders; with more branches than colors, some branches share one).
+// Package palette provides a fixed set of distinct colors used
+// to color commit-graph lanes (cyclically by lane position),
+// the ref labels shown on commits,
+// and branch names (stably by name hash,
+// so a branch keeps its color across renders;
+// with more branches than colors, some branches share one).
 package palette
 
 import (
@@ -14,8 +16,8 @@ import (
 
 type rgb struct{ r, g, b uint8 }
 
-// laneColors is the predefined palette (N = 10), ordered so that adjacent
-// indices (= adjacent graph lanes) contrast strongly.
+// laneColors is the predefined palette (N = 10),
+// ordered so that adjacent indices (= adjacent graph lanes) contrast strongly.
 var laneColors = []rgb{
 	{0x61, 0xaf, 0xef}, // blue
 	{0x98, 0xc3, 0x79}, // green
@@ -55,8 +57,9 @@ func dimmed(c rgb) rgb {
 }
 
 var (
-	// one shared pointer per lane color, so that a style handed out by ByIndex
-	// can be mapped back to its index with IndexOf
+	// one shared pointer per lane color,
+	// so that a style handed out by ByIndex can be mapped back to its index
+	// with IndexOf
 	laneStyles     []*style.TextStyle
 	labelStyles    []style.TextStyle
 	dimLabelStyles []style.TextStyle
@@ -86,8 +89,8 @@ func wrap(i int) int {
 	return ((i % n) + n) % n
 }
 
-// ByIndex returns the lane color for an index, wrapping cyclically. The same
-// pointer is returned for the same index.
+// ByIndex returns the lane color for an index, wrapping cyclically.
+// The same pointer is returned for the same index.
 func ByIndex(i int) *style.TextStyle {
 	return laneStyles[wrap(i)]
 }
@@ -102,8 +105,9 @@ func IndexOf(s *style.TextStyle) (int, bool) {
 	return 0, false
 }
 
-// IndexForName returns a stable palette index for a ref name. The remote
-// prefix "origin/" is stripped so a branch and its origin counterpart match.
+// IndexForName returns a stable palette index for a ref name.
+// The remote prefix "origin/" is stripped
+// so a branch and its origin counterpart match.
 func IndexForName(name string) int {
 	name = strings.TrimPrefix(name, "origin/")
 	h := fnv.New32a()
@@ -121,7 +125,8 @@ func Label(i int) style.TextStyle {
 	return labelStyles[wrap(i)]
 }
 
-// DimLabel returns a darker filled label style in lane color i (remote branches).
+// DimLabel returns a darker filled label style in lane color i
+// (remote branches).
 func DimLabel(i int) style.TextStyle {
 	return dimLabelStyles[wrap(i)]
 }

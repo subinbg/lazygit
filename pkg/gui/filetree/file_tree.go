@@ -100,9 +100,9 @@ func (self *FileTree) ExpandToPath(path string) {
 	self.collapsedPaths.ExpandToPath(path)
 }
 
-// InSections reports whether the tree is split into an unstaged and a staged
-// section (see BuildSectionedTreeFromFiles): in the tree view, when nothing
-// is filtered by status.
+// InSections reports whether the tree is split
+// into an unstaged and a staged section (see BuildSectionedTreeFromFiles):
+// in the tree view, when nothing is filtered by status.
 func (self *FileTree) InSections() bool {
 	return self.showTree && self.filter == DisplayAll &&
 		self.common.UserConfig().Gui.ShowStagingSectionsInFilesView

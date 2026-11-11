@@ -8,9 +8,9 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/gui/style"
 )
 
-// The gutter of a diff line: the old and new line numbers, each right-aligned
-// in numWidth columns, then the separator; the marker (' ', '+' or '-') and
-// the text follow.
+// The gutter of a diff line:
+// the old and new line numbers, each right-aligned in numWidth columns,
+// then the separator; the marker (' ', '+' or '-') and the text follow.
 const (
 	gutterSeparator = "│"
 	minNumWidth     = 3
@@ -23,13 +23,13 @@ const (
 type Renderer struct {
 	theme    Theme
 	numWidth int
-	// false renders the same layout without colors, e.g. to measure how the
-	// lines wrap
+	// false renders the same layout without colors,
+	// e.g. to measure how the lines wrap
 	colors bool
 }
 
-// NewRenderer returns a renderer whose gutter fits line numbers up to
-// maxLineNumber.
+// NewRenderer returns a renderer
+// whose gutter fits line numbers up to maxLineNumber.
 func NewRenderer(theme Theme, maxLineNumber int, colors bool) *Renderer {
 	return &Renderer{
 		theme:    theme,
@@ -43,8 +43,8 @@ func NumWidth(maxLineNumber int) int {
 	return max(minNumWidth, len(strconv.Itoa(max(maxLineNumber, 0))))
 }
 
-// GutterWidth is the number of cells before the marker of a diff line, for
-// the given line-number column width.
+// GutterWidth is the number of cells before the marker of a diff line,
+// for the given line-number column width.
 func GutterWidth(numWidth int) int {
 	return 2*numWidth + 2 + len([]rune(gutterSeparator))
 }
@@ -56,8 +56,8 @@ func (r *Renderer) sprint(s style.TextStyle, text string) string {
 	return s.Sprint(text)
 }
 
-// fill extends the styling of the last styled run to the end of the line, so
-// that a tinted line is tinted all the way across the panel.
+// fill extends the styling of the last styled run to the end of the line,
+// so that a tinted line is tinted all the way across the panel.
 func (r *Renderer) fill(styled string) string {
 	if !r.colors {
 		return styled
@@ -85,8 +85,9 @@ func (r *Renderer) Context(oldNo, newNo int, text string) string {
 	return r.gutter(r.theme.styles.gutter, oldNo, newNo) + " " + text
 }
 
-// Add renders an added line. emph marks the changed words; included marks
-// the line as part of a custom patch being built.
+// Add renders an added line.
+// emph marks the changed words;
+// included marks the line as part of a custom patch being built.
 func (r *Renderer) Add(newNo int, text string, emph []Span, included bool) string {
 	s := r.theme.styles
 	marker := s.addMarker
@@ -146,8 +147,8 @@ func (r *Renderer) FileHeader(path string, added int, removed int) string {
 	return r.fill(line)
 }
 
-// Meta renders a line of information about the file, shown under its header
-// ("new file", "renamed from ...").
+// Meta renders a line of information about the file,
+// shown under its header ("new file", "renamed from ...").
 func (r *Renderer) Meta(text string) string {
 	return r.fill(r.sprint(r.theme.styles.meta, " "+text))
 }

@@ -40,9 +40,9 @@ func TestBuildSectionedTreeFromFiles(t *testing.T) {
 	assert.Equal(t, []bool{true, false, false, false, false, true, false, false, false, false},
 		lo.Map(nodes, func(node *Node[models.File], _ int) bool { return node.IsSection() }))
 
-	// a section is never compressed into its only directory, while that
-	// directory compresses with its own only subdirectory; and a section
-	// without files is still there, to show that it is empty
+	// a section is never compressed into its only directory,
+	// while that directory compresses with its own only subdirectory;
+	// and a section without files is still there, to show that it is empty
 	onlyStaged := BuildSectionedTreeFromFiles(
 		[]*models.File{{Path: "a/b/c", HasStagedChanges: true}},
 		NodeSortComparator[models.File]("mixed", false))

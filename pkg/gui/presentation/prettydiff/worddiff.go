@@ -5,31 +5,31 @@ import (
 	"unicode/utf8"
 )
 
-// Span is a byte range [Start, End) of a line's text to highlight, because the
-// words in it were changed.
+// Span is a byte range [Start, End) of a line's text to highlight,
+// because the words in it were changed.
 type Span struct {
 	Start, End int
 }
 
-// Lines with more tokens than this are compared no further: the quadratic
-// comparison would cost more than the highlight is worth.
+// Lines with more tokens than this are compared no further:
+// the quadratic comparison would cost more than the highlight is worth.
 const maxTokens = 400
 
-// If highlighting would cover more than this share of a pair of lines, the
-// lines are too different for the highlight to mean anything, so they get
-// none.
+// If highlighting would cover more than this share of a pair of lines,
+// the lines are too different for the highlight to mean anything,
+// so they get none.
 const maxChangedRatio = 0.6
 
-// Blocks with more line pairings to consider than this are paired by
-// position rather than by similarity.
+// Blocks with more line pairings to consider than this are paired by position
+// rather than by similarity.
 const maxSimilarityPairings = 256
 
 type token struct {
 	start, end int
 }
 
-// tokenize splits a line into words (runs of letters, digits and
-// underscores), runs of whitespace, and single other characters.
+// tokenize splits a line into words (runs of letters, digits and underscores),
+// runs of whitespace, and single other characters.
 func tokenize(s string) []token {
 	tokens := make([]token, 0, len(s)/3)
 	kind := func(r rune) int {
@@ -62,8 +62,8 @@ func tokenize(s string) []token {
 	return tokens
 }
 
-// commonTokens marks the tokens of a and b that are part of a longest common
-// subsequence of the two token lists.
+// commonTokens marks the tokens of a and b
+// that are part of a longest common subsequence of the two token lists.
 func commonTokens(a string, ta []token, b string, tb []token) ([]bool, []bool) {
 	n, m := len(ta), len(tb)
 	// lengths[i][j] is the LCS length of ta[i:] and tb[j:]
@@ -120,9 +120,10 @@ func spannedBytes(spans []Span) int {
 	return total
 }
 
-// WordSpans compares a removed line with the added line that replaced it and
-// returns the ranges of each that changed. ok is false when the lines are too
-// long or too different to highlight usefully.
+// WordSpans compares a removed line with the added line that replaced it
+// and returns the ranges of each that changed.
+// ok is false when the lines are too long or too different
+// to highlight usefully.
 func WordSpans(oldLine, newLine string) (oldSpans []Span, newSpans []Span, ok bool) {
 	if oldLine == newLine {
 		return nil, nil, true
@@ -156,11 +157,12 @@ func similarity(oldLine, newLine string) float64 {
 	return 1 - float64(spannedBytes(oldSpans)+spannedBytes(newSpans))/total
 }
 
-// BlockSpans highlights a block of removed lines that is followed by a block
-// of added lines. Lines are paired by position when there are as many of each,
-// and otherwise by similarity (keeping their order); lines left without a
-// partner are not highlighted. It returns the spans of each removed line and
-// of each added line.
+// BlockSpans highlights a block of removed lines
+// that is followed by a block of added lines.
+// Lines are paired by position when there are as many of each,
+// and otherwise by similarity (keeping their order);
+// lines left without a partner are not highlighted.
+// It returns the spans of each removed line and of each added line.
 func BlockSpans(dels []string, adds []string) ([][]Span, [][]Span) {
 	delSpans := make([][]Span, len(dels))
 	addSpans := make([][]Span, len(adds))
@@ -181,15 +183,16 @@ func BlockSpans(dels []string, adds []string) ([][]Span, [][]Span) {
 		return delSpans, addSpans
 	}
 
-	// Pair by similarity, in order: for each removed line pick the most
-	// similar added line after the one paired last.
+	// Pair by similarity, in order:
+	// for each removed line pick the most similar added line
+	// after the one paired last.
 	j := 0
 	for i := range dels {
 		if j >= len(adds) {
 			break
 		}
-		// leave enough added lines for the remaining removed lines when there
-		// are more added than removed lines; and vice versa
+		// leave enough added lines for the remaining removed lines
+		// when there are more added than removed lines; and vice versa
 		bestJ, bestScore := -1, 0.0
 		lastJ := len(adds) - (len(dels) - i)
 		if len(dels) > len(adds) {
@@ -202,8 +205,8 @@ func BlockSpans(dels []string, adds []string) ([][]Span, [][]Span) {
 		}
 		if bestJ == -1 {
 			if len(dels) > len(adds) {
-				// this removed line has no partner; keep the added line for
-				// a later one
+				// this removed line has no partner;
+				// keep the added line for a later one
 				continue
 			}
 			j++

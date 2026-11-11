@@ -1,17 +1,18 @@
 package config
 
-// DefaultCommitDetailsFormat is the header shown above a commit's patch: the
-// refs, the subject and body, author and committer with dates, and the
-// parents, in the spirit of GitKraken's commit details panel.
+// DefaultCommitDetailsFormat is the header shown above a commit's patch:
+// the refs, the subject and body, author and committer with dates,
+// and the parents, in the spirit of GitKraken's commit details panel.
 const DefaultCommitDetailsFormat = "tformat:%C(yellow)commit %H%C(auto)%d%C(reset)%n" +
 	"%C(bold)%s%C(reset)%n%+b%n" +
 	"Author:    %an <%ae>  %ad%n" +
 	"Committer: %cn <%ce>  %cd%n" +
 	"Parents:   %p%n"
 
-// ApplyUpstreamDefaults resets the settings whose defaults this fork changed
-// back to upstream lazygit's values. The integration test harness uses it so
-// that upstream's tests keep passing unchanged.
+// ApplyUpstreamDefaults resets the settings
+// whose defaults this fork changed back to upstream lazygit's values.
+// The integration test harness uses it
+// so that upstream's tests keep passing unchanged.
 func ApplyUpstreamDefaults(cfg *UserConfig) {
 	// commits view
 	cfg.Gui.ShowRefLabelsInCommitsView = false

@@ -209,8 +209,9 @@ type Gui struct {
 
 	ShouldHandleMouseEvent func(view *View, key KeyName) bool
 
-	// OnScrollbarScroll, if set, is called after dragging a view's scrollbar
-	// scrolled it, so that the client can do what it does after any scroll
+	// OnScrollbarScroll, if set,
+	// is called after dragging a view's scrollbar scrolled it,
+	// so that the client can do what it does after any scroll
 	// (e.g. render the lines that came into view, or read more of them).
 	OnScrollbarScroll func(view *View)
 
@@ -1800,8 +1801,9 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 			}
 		}
 
-		// Dragging a scrollbar scrolls its view and nothing else: the gesture
-		// moves no cursor or focus, and runs no bindings of the view.
+		// Dragging a scrollbar scrolls its view and nothing else:
+		// the gesture moves no cursor or focus,
+		// and runs no bindings of the view.
 		if g.scrollbarDrag != nil {
 			switch {
 			case ev.Key.KeyName() == MouseRelease:
@@ -1893,10 +1895,11 @@ func (g *Gui) onKey(ev *GocuiEvent) error {
 			g.captureMouse(v)
 		}
 
-		// Selecting text leaves the cursor alone, since the cursor is the
-		// selected line of a list or diff: a press that starts a text selection
-		// doesn't move it (a plain click moves it on release, see
-		// CanStartTextSelection), and neither does the drag that extends it.
+		// Selecting text leaves the cursor alone,
+		// since the cursor is the selected line of a list or diff:
+		// a press that starts a text selection doesn't move it
+		// (a plain click moves it on release, see CanStartTextSelection),
+		// and neither does the drag that extends it.
 		startsTextSelection := v.TextSelectable && ev.Key.KeyName() == MouseLeft && ev.Key.Mod() == ModNone &&
 			(v.CanStartTextSelection == nil || v.CanStartTextSelection(newX, newY))
 		draggingText := v.TextSelectable && v.IsSelectingText() && ev.Key.Mod()&ModMotion != 0

@@ -42,8 +42,9 @@ func NewWorkingTreeContext(c *ContextCommon) *WorkingTreeContext {
 		})
 	}
 
-	// "Unstaged files (n)" / "Staged files (m)" headers, in the flat view only
-	// (a tree can't be split by status), and only when no status filter is on.
+	// "Unstaged files (n)" / "Staged files (m)" headers,
+	// in the flat view only (a tree can't be split by status),
+	// and only when no status filter is on.
 	getNonModelItems := func() []*NonModelItem {
 		if !c.UserConfig().Gui.ShowStagingSectionsInFilesView ||
 			viewModel.InTreeMode() ||

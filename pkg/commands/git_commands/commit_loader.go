@@ -54,8 +54,8 @@ func NewCommitLoader(
 	}
 }
 
-// CommitLimit is the number of commits loaded when GetCommitsOptions.Limit
-// is set.
+// CommitLimit is the number of commits loaded
+// when GetCommitsOptions.Limit is set.
 const CommitLimit = 300
 
 type GetCommitsOptions struct {
@@ -609,11 +609,13 @@ func (self *CommitLoader) getLogCmd(opts GetCommitsOptions) *oscommands.CmdObj {
 	cmdArgs := NewGitCmd("log").
 		Arg(refSpec).
 		ArgIf(gitLogOrder != "default", "--"+gitLogOrder).
-		// stash and notes refs are separate roots that only clutter the whole-repo graph
+		// stash and notes refs are separate roots
+		// that only clutter the whole-repo graph
 		ArgIf(opts.All, "--exclude=refs/stash", "--exclude=refs/notes/*", "--all").
 		Arg("--oneline").
 		Arg(prettyFormat).
-		// full ref names let us tell local branches, remote branches and tags apart
+		// full ref names let us tell local branches,
+		// remote branches and tags apart
 		Arg("--decorate=full").
 		Arg("--abbrev=40").
 		ArgIf(opts.FilterAuthor != "", "--author="+opts.FilterAuthor).

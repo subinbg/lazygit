@@ -8,8 +8,8 @@ type StashEntry struct {
 	Recency string
 	Name    string
 	Hash    string
-	// The commit the stash was made on (the stash commit's first parent), and
-	// when the stash was made
+	// The commit the stash was made on (the stash commit's first parent),
+	// and when the stash was made
 	BaseHash      string
 	UnixTimestamp int64
 }

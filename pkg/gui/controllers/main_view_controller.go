@@ -26,9 +26,10 @@ type MainViewController struct {
 	dragAutoscroller    *helpers.DragAutoscroller
 	draggingWithMouse   bool
 	lineFlashGeneration uint64
-	// column of the pointer at the last drag event of a text selection (see
-	// draggingText), where the selection is extended to when autoscrolling moves
-	// the line under the pointer
+	// column of the pointer at the last drag event of a text selection
+	// (see draggingText),
+	// where the selection is extended to
+	// when autoscrolling moves the line under the pointer
 	lastDragX int
 }
 
@@ -263,8 +264,9 @@ func (self *MainViewController) GetMouseKeybindings(opts types.KeybindingsOpts) 
 			FocusedView: self.otherContext.GetViewName(),
 		},
 		{
-			// Dragging after a click extends a range selection from the clicked line,
-			// or the text selection the press started, wherever the focus is.
+			// Dragging after a click extends a range selection
+			// from the clicked line, or the text selection the press started,
+			// wherever the focus is.
 			ViewName: self.context.GetViewName(),
 			Key:      gocui.MouseLeft,
 			Modifier: gocui.ModMotion,
@@ -1252,23 +1254,25 @@ func (self *MainViewController) isFocused() bool {
 	return self.c.Context().Current().GetKey() == self.context.GetKey()
 }
 
-// draggingText reports whether the mouse gesture in progress selects text rather
-// than diff lines (see gui.mouseTextSelection): it does unless it started on the
-// gutter of a diff line (see DiffLineHelper.InSelectionGutter).
+// draggingText reports whether the mouse gesture in progress selects text
+// rather than diff lines (see gui.mouseTextSelection):
+// it does unless it started on the gutter of a diff line
+// (see DiffLineHelper.InSelectionGutter).
 func (self *MainViewController) draggingText() bool {
 	view := self.context.GetView()
 	return view.TextSelectable && view.IsSelectingText()
 }
 
 // copiesText reports whether copying copies the text selected with the mouse
-// rather than diff lines: when there is such text, or when there are no diff
-// lines to select.
+// rather than diff lines:
+// when there is such text, or when there are no diff lines to select.
 func (self *MainViewController) copiesText() bool {
 	view := self.context.GetView()
 	return view.HasTextSelection() || (view.TextSelectable && !self.isDiffView())
 }
 
-// copySelectedText copies the text selected with the mouse as it stands on screen.
+// copySelectedText copies the text selected with the mouse
+// as it stands on screen.
 func (self *MainViewController) copySelectedText() error {
 	text := self.context.GetView().SelectedText()
 	if text == "" {

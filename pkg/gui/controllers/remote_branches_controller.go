@@ -17,8 +17,8 @@ type RemoteBranchesController struct {
 	*ListControllerTrait[*models.RemoteBranch]
 	c *ControllerCommon
 
-	// for the remote-level actions offered when the remotes are unfolded (see
-	// gui.unfoldRemotes), where the list of remotes isn't shown
+	// for the remote-level actions offered when the remotes are unfolded
+	// (see gui.unfoldRemotes), where the list of remotes isn't shown
 	remotesController *RemotesController
 }
 
@@ -193,8 +193,9 @@ func (self *RemoteBranchesController) fetchRemote(branch *models.RemoteBranch) e
 	})
 }
 
-// remoteOptionsMenu offers the actions of the remotes list (which isn't shown
-// when the remotes are unfolded) for the selected branch's remote.
+// remoteOptionsMenu offers the actions of the remotes list
+// (which isn't shown when the remotes are unfolded)
+// for the selected branch's remote.
 func (self *RemoteBranchesController) remoteOptionsMenu() error {
 	var remote *models.Remote
 	branch := self.context().GetSelected()

@@ -1,9 +1,10 @@
-// Package lanegraph lays out and renders a commit graph the way GitKraken
-// does: every line of history keeps a stable column ("lane") from its tip
-// down to the commit where it meets another line, merge lines curve into the
-// lane of the branch they merged, new lines take the leftmost free lane, and
-// each lane has a fixed color. Rows are one terminal line high, so curves
-// become box-drawing corners within the row.
+// Package lanegraph lays out and renders a commit graph the way GitKraken does:
+// every line of history keeps a stable column ("lane")
+// from its tip down to the commit where it meets another line,
+// merge lines curve into the lane of the branch they merged,
+// new lines take the leftmost free lane, and each lane has a fixed color.
+// Rows are one terminal line high,
+// so curves become box-drawing corners within the row.
 //
 // The layout rules, in order, for each commit (top to bottom):
 //
@@ -17,12 +18,14 @@
 //     curving into an existing line), or opens a new lane in the leftmost
 //     free column (a column freed in step 2 counts as free).
 //
-// Lanes never shift sideways, so a line is a straight vertical run with
-// corners only where it starts, ends or is joined. Rule 1 differs from
-// GitKraken, which gives the node to the lane that started heading for the
-// commit first: taking the leftmost lane instead keeps the leftmost line (the
-// checked-out branch, when the working-tree row is shown) straight all the
-// way down, while other lines drift left over time.
+// Lanes never shift sideways,
+// so a line is a straight vertical run with corners only where it starts,
+// ends or is joined.
+// Rule 1 differs from GitKraken,
+// which gives the node to the lane that started heading for the commit first:
+// taking the leftmost lane instead keeps the leftmost line
+// (the checked-out branch, when the working-tree row is shown)
+// straight all the way down, while other lines drift left over time.
 package lanegraph
 
 import (
@@ -35,7 +38,8 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/gui/style"
 )
 
-// Glyphs used for the nodes. Merge commits get a small dot, like GitKraken,
+// Glyphs used for the nodes.
+// Merge commits get a small dot, like GitKraken,
 // so that commits with content of their own stand out.
 const (
 	CommitGlyph      = '●'
@@ -49,18 +53,19 @@ const (
 
 // Options controls how the graph is built.
 type Options struct {
-	// WorkingTree adds a pseudo-commit row above the commits standing for the
-	// uncommitted changes: a dotted node connected to the HEAD commit, like
-	// GitKraken's WIP node. It always takes column 0, so the checked-out
-	// branch ends up in the leftmost lane.
+	// WorkingTree adds a pseudo-commit row above the commits standing
+	// for the uncommitted changes:
+	// a dotted node connected to the HEAD commit, like GitKraken's WIP node.
+	// It always takes column 0,
+	// so the checked-out branch ends up in the leftmost lane.
 	WorkingTree bool
-	// HeadHash is the hash of the HEAD commit the working-tree row connects
-	// to. When it is empty or not among the commits, the working-tree row is
-	// a lone node.
+	// HeadHash is the hash of the HEAD commit the working-tree row connects to.
+	// When it is empty or not among the commits,
+	// the working-tree row is a lone node.
 	HeadHash string
-	// Stashes adds a row for each stash, like GitKraken's stash nodes: a node
-	// with a dotted line down to the commit the stash was made on. The line
-	// never takes that commit's node from the line of its branch.
+	// Stashes adds a row for each stash, like GitKraken's stash nodes:
+	// a node with a dotted line down to the commit the stash was made on.
+	// The line never takes that commit's node from the line of its branch.
 	Stashes []Stash
 }
 
@@ -73,22 +78,24 @@ type Stash struct {
 	Before int
 }
 
-// Graph is a laid-out commit graph: one row per commit, preceded by the
-// working-tree row when Options.WorkingTree is set.
+// Graph is a laid-out commit graph:
+// one row per commit,
+// preceded by the working-tree row when Options.WorkingTree is set.
 type Graph struct {
 	rows      []row
 	laneOf    map[string]int
 	numLanes  int
 	hasWIPRow bool
-	// row index of each commit, and of each of Options.Stashes (-1 for a stash
-	// that has no row)
+	// row index of each commit,
+	// and of each of Options.Stashes (-1 for a stash that has no row)
 	rowOfCommit []int
 	rowOfStash  []int
 }
 
-// cell is one terminal cell of a rendered row. A lane occupies two cells: the
-// glyph cell (node or vertical line) and, to its right, the connector cell
-// that horizontal segments run through.
+// cell is one terminal cell of a rendered row.
+// A lane occupies two cells:
+// the glyph cell (node or vertical line) and, to its right,
+// the connector cell that horizontal segments run through.
 type cell struct {
 	glyph rune // 0 for blank
 	color int  // lane index the color is taken from; -1 for none
@@ -103,13 +110,15 @@ type lane struct {
 	expect string
 	// true for the working-tree lane above the HEAD commit, drawn dotted
 	dashed bool
-	// true for the lane of a stash, which joins the commit it heads for
+	// true for the lane of a stash,
+	// which joins the commit it heads for
 	// rather than carrying on as that commit's line
 	side bool
 }
 
-// Build lays out the graph for the given commits, which must be in the order
-// they are displayed (children before parents, as git log emits them).
+// Build lays out the graph for the given commits,
+// which must be in the order they are displayed
+// (children before parents, as git log emits them).
 func Build(commits []*models.Commit, opts Options) *Graph {
 	g := &Graph{
 		laneOf:    make(map[string]int, len(commits)),
@@ -121,8 +130,8 @@ func Build(commits []*models.Commit, opts Options) *Graph {
 
 	var lanes []*lane
 
-	// column of the leftmost lane heading for the commit, or -1; side lanes
-	// count only when allowSide is set
+	// column of the leftmost lane heading for the commit, or -1;
+	// side lanes count only when allowSide is set
 	leftmostHeadingFor := func(hash string, allowSide bool) int {
 		for k, ln := range lanes {
 			if ln != nil && ln.expect == hash && (allowSide || !ln.side) {
@@ -159,8 +168,8 @@ func Build(commits []*models.Commit, opts Options) *Graph {
 		col := leftmostHeadingFor(hash, false)
 		expected := col >= 0
 		if !expected {
-			// A stash never opens the leftmost column, which is left to the
-			// line of the commits below it.
+			// A stash never opens the leftmost column,
+			// which is left to the line of the commits below it.
 			col = firstFreeFrom(lo.Ternary(side, 1, 0))
 			lanes[col] = &lane{}
 		}
@@ -263,8 +272,9 @@ func Build(commits []*models.Commit, opts Options) *Graph {
 // pseudo hash of the working-tree row; never collides with a real hash
 const workingTreeHash = "<working tree>"
 
-// prefix of the pseudo hash of a stash's row, so that it can't be taken for
-// the stash commit if that is ever among the commits
+// prefix of the pseudo hash of a stash's row,
+// so that it can't be taken
+// for the stash commit if that is ever among the commits
 const stashHashPrefix = "<stash>"
 
 func buildRow(
@@ -294,8 +304,8 @@ func buildRow(
 
 	type conn struct {
 		up, down, left, right bool
-		// color of the horizontal segment passing through, when there is no
-		// vertical line to take the color from
+		// color of the horizontal segment passing through,
+		// when there is no vertical line to take the color from
 		hcolor int
 	}
 	conns := make([]conn, numCols)
@@ -314,8 +324,8 @@ func buildRow(
 		cells[i].color = -1
 	}
 
-	// A horizontal segment runs from the node to another column and is
-	// colored like that column: the line joining or leaving the node.
+	// A horizontal segment runs from the node to another column
+	// and is colored like that column: the line joining or leaving the node.
 	addSegment := func(other int) {
 		lo, hi := min(col, other), max(col, other)
 		for k := lo; k <= hi; k++ {
@@ -370,8 +380,8 @@ func buildRow(
 	return row{cells: cells}
 }
 
-// boxGlyph returns the box-drawing character connecting the given sides, or
-// 0 when nothing connects.
+// boxGlyph returns the box-drawing character connecting the given sides,
+// or 0 when nothing connects.
 func boxGlyph(up, down, left, right bool) rune {
 	switch {
 	case up && down && left && right:
@@ -429,8 +439,8 @@ func (g *Graph) Width() int {
 	return 2 * g.numLanes
 }
 
-// RowIndexOfCommit maps a commit index (into the commits Build was given) to
-// its row index.
+// RowIndexOfCommit maps a commit index (into the commits Build was given)
+// to its row index.
 func (g *Graph) RowIndexOfCommit(commitIdx int) int {
 	if commitIdx >= 0 && commitIdx < len(g.rowOfCommit) {
 		return g.rowOfCommit[commitIdx]
@@ -461,8 +471,8 @@ func (g *Graph) LaneOfStash(stash Stash) (int, bool) {
 	return g.LaneOf(stashHashPrefix + stash.Hash)
 }
 
-// LaneStyle returns the color of the lane the commit's node sits in, or nil
-// when the commit is not in the graph.
+// LaneStyle returns the color of the lane the commit's node sits in,
+// or nil when the commit is not in the graph.
 func (g *Graph) LaneStyle(hash string) *style.TextStyle {
 	col, ok := g.laneOf[hash]
 	if !ok {
@@ -483,9 +493,9 @@ func (g *Graph) LaneStyles() map[string]*style.TextStyle {
 	return result
 }
 
-// RenderRow renders a row, colored, padded with spaces to at least minWidth
-// cells (pass 0 for no padding). A row always ends with a blank cell, so text
-// can follow it directly.
+// RenderRow renders a row, colored,
+// padded with spaces to at least minWidth cells (pass 0 for no padding).
+// A row always ends with a blank cell, so text can follow it directly.
 func (g *Graph) RenderRow(rowIdx int, minWidth int) string {
 	return g.render(rowIdx, minWidth, false)
 }

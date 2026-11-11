@@ -241,8 +241,8 @@ func (self *CommitCommands) AmendHeadCmdObj() *oscommands.CmdObj {
 }
 
 func (self *CommitCommands) ShowCmdObj(hash string, filterPaths []string, mode DiffMode) *oscommands.CmdObj {
-	// git.commitDetailsFormat is a --pretty format for the header above the
-	// patch; empty means git's default header
+	// git.commitDetailsFormat is a --pretty format for the header
+	// above the patch; empty means git's default header
 	detailsFormat := self.UserConfig().Git.CommitDetailsFormat
 
 	cmdArgs := NewGitCmd("show").

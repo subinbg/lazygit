@@ -6,13 +6,15 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/commands/models"
 )
 
-// With gui.showStagingSectionsInFilesView, the tree view splits the files into
-// an unstaged and a staged section, each a directory tree of its own under a
-// node of its own (see BuildSectionedTreeFromFiles). A directory with files in
-// both sections appears in both, so the nodes of a section have internal paths
-// under the section's (e.g. "\x00staged/pkg/a.go"), which keeps their collapsed
-// state and their place in the list apart; their logical paths (GetPath) are
-// the usual ones.
+// With gui.showStagingSectionsInFilesView,
+// the tree view splits the files into an unstaged and a staged section,
+// each a directory tree of its own under a node of its own
+// (see BuildSectionedTreeFromFiles).
+// A directory with files in both sections appears in both,
+// so the nodes of a section have internal paths under the section's
+// (e.g. "\x00staged/pkg/a.go"),
+// which keeps their collapsed state and their place in the list apart;
+// their logical paths (GetPath) are the usual ones.
 const (
 	UnstagedSectionPath = sectionMarker + "unstaged"
 	StagedSectionPath   = sectionMarker + "staged"
@@ -23,20 +25,20 @@ const (
 
 // InUnstagedSection reports whether a file belongs in the unstaged section:
 // it has unstaged changes (a file with both kinds of changes is listed there),
-// or it is untracked. The staged section has the files whose changes are all
-// staged.
+// or it is untracked.
+// The staged section has the files whose changes are all staged.
 func InUnstagedSection(file *models.File) bool {
 	return file.HasUnstagedChanges || !file.HasStagedChanges
 }
 
-// IsSection reports whether the node is the node of a section, as opposed to a
-// file or a directory.
+// IsSection reports whether the node is the node of a section,
+// as opposed to a file or a directory.
 func (self *Node[T]) IsSection() bool {
 	return isSectionPath(self.path)
 }
 
-// IsEmptySection reports whether the node is the node of a section without
-// any files.
+// IsEmptySection reports whether the node is the node of a section
+// without any files.
 func (self *Node[T]) IsEmptySection() bool {
 	return self.IsSection() && len(self.Children) == 0
 }
@@ -45,9 +47,10 @@ func isSectionPath(internalPath string) bool {
 	return strings.HasPrefix(internalPath, sectionMarker) && !strings.Contains(internalPath, "/")
 }
 
-// logicalPath turns an internal path into the path from the user's point of
-// view: without the "./" of the root item, or the section a node is in. A
-// section's own logical path is empty.
+// logicalPath turns an internal path into the path
+// from the user's point of view:
+// without the "./" of the root item, or the section a node is in.
+// A section's own logical path is empty.
 func logicalPath(internalPath string) string {
 	if strings.HasPrefix(internalPath, sectionMarker) {
 		_, rest, found := strings.Cut(internalPath, "/")
@@ -59,10 +62,11 @@ func logicalPath(internalPath string) string {
 	return strings.TrimPrefix(internalPath, "./")
 }
 
-// BuildSectionedTreeFromFiles builds a tree whose top-level nodes are the
-// unstaged and the staged section, each holding a directory tree of its files.
-// Both are there as long as there are any files, so that an empty one shows
-// that it is empty.
+// BuildSectionedTreeFromFiles builds a tree
+// whose top-level nodes are the unstaged and the staged section,
+// each holding a directory tree of its files.
+// Both are there as long as there are any files,
+// so that an empty one shows that it is empty.
 func BuildSectionedTreeFromFiles(
 	files []*models.File,
 	cmp func(a, b *Node[models.File]) int,
@@ -129,8 +133,9 @@ func buildSectionTree(
 	return section
 }
 
-// sectionedPaths returns the internal paths a path that doesn't name its
-// section stands for in a sectioned tree: the path in either section.
+// sectionedPaths returns the internal paths a path
+// that doesn't name its section stands for in a sectioned tree:
+// the path in either section.
 func sectionedPaths(path string) []string {
 	path = strings.TrimPrefix(path, "./")
 	return []string{UnstagedSectionPath + "/" + path, StagedSectionPath + "/" + path}

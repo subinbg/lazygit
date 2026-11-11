@@ -739,17 +739,18 @@ func (self *FilesController) unstageFilteredFiles(nodes []*filetree.FileNode) er
 	return nil
 }
 
-// actsOnListedFilesOnly reports whether staging or unstaging a directory acts on
-// the files listed under it rather than on the directory: when a text filter
-// hides some of them, or the tree is split into sections, where a directory of
-// one section doesn't list the files of the other.
+// actsOnListedFilesOnly reports whether staging or unstaging a directory acts
+// on the files listed under it rather than on the directory:
+// when a text filter hides some of them, or the tree is split into sections,
+// where a directory of one section doesn't list the files of the other.
 func (self *FilesController) actsOnListedFilesOnly() bool {
 	return self.context().IsFiltering() || self.context().InSections()
 }
 
-// notOnlyEmptySections disables the commands that act on the files of the
-// selection when it is the node of a section without files, which is listed
-// only to show that it is empty.
+// notOnlyEmptySections disables the commands
+// that act on the files of the selection
+// when it is the node of a section without files,
+// which is listed only to show that it is empty.
 func (self *FilesController) notOnlyEmptySections(nodes []*filetree.FileNode) *types.DisabledReason {
 	if len(nodes) > 0 && lo.EveryBy(nodes, func(node *filetree.FileNode) bool { return node.IsEmptySection() }) {
 		return &types.DisabledReason{Text: self.c.Tr.EmptyFilesSection}
@@ -757,8 +758,9 @@ func (self *FilesController) notOnlyEmptySections(nodes []*filetree.FileNode) *t
 	return nil
 }
 
-// notASection disables the commands that act on a path for the node of a section
-// of the tree (see filetree.BuildSectionedTreeFromFiles), which has none.
+// notASection disables the commands
+// that act on a path for the node of a section of the tree
+// (see filetree.BuildSectionedTreeFromFiles), which has none.
 func (self *FilesController) notASection() *types.DisabledReason {
 	if node := self.context().GetSelected(); node != nil && node.IsSection() {
 		return &types.DisabledReason{Text: self.c.Tr.NotAvailableOnFilesSection}

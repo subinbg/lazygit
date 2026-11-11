@@ -1,9 +1,10 @@
 name: fork-release
 
-# Builds the fork's binaries. Pushing a release-<upstream tag>[-suffix] tag (see
-# fork/dev release) also tests them and publishes a GitHub Release; running the
-# workflow by hand builds the artifacts only. Upstream's own workflows are
-# disabled in this repository's Actions settings.
+# Builds the fork's binaries.
+# Pushing a release-<upstream tag>[-suffix] tag (see fork/dev release)
+# also tests them and publishes a GitHub Release;
+# running the workflow by hand builds the artifacts only.
+# Upstream's own workflows are disabled in this repository's Actions settings.
 on:
   push:
     tags: ['release-*']
@@ -130,8 +131,9 @@ jobs:
           esac
           "$bin" --version
 
-  # Not required by the release: GitHub's macOS arm64 runners are sometimes not
-  # available at all, and the darwin build is cross-compiled the same way each time.
+  # Not required by the release:
+  # GitHub's macOS arm64 runners are sometimes not available at all,
+  # and the darwin build is cross-compiled the same way each time.
   verify-darwin:
     name: Check the macOS binary
     needs: build

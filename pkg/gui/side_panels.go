@@ -40,9 +40,9 @@ func (gui *Gui) sidePanelTabTitles() map[string]string {
 	}
 }
 
-// sidePanelViewName is the view a gui.sidePanels name controls. With
-// gui.unfoldRemotes the "remotes" tab shows the remote branches list rather
-// than the list of remotes.
+// sidePanelViewName is the view a gui.sidePanels name controls.
+// With gui.unfoldRemotes the "remotes" tab shows the remote branches list
+// rather than the list of remotes.
 func (gui *Gui) sidePanelViewName(name string) string {
 	if name == "remotes" && gui.c.UserConfig().Gui.UnfoldRemotes {
 		return "remoteBranches"
@@ -147,9 +147,10 @@ func (gui *Gui) assignSidePanelWindows(contextTree *context.ContextTree) {
 	// unlike e.g. remotes, those tabs can't be hidden, so their windows are
 	// always part of the layout.
 	if unfoldRemotes {
-		// The remote branches list is the remotes tab itself and was assigned
-		// above; the list of remotes is never shown, so give its view a window
-		// that isn't part of the layout.
+		// The remote branches list is the remotes tab itself
+		// and was assigned above;
+		// the list of remotes is never shown,
+		// so give its view a window that isn't part of the layout.
 		contextTree.Remotes.SetWindowName("hiddenRemotes")
 	} else {
 		contextTree.RemoteBranches.SetWindowName(contextTree.Branches.GetWindowName())

@@ -80,8 +80,9 @@ func (gui *Gui) RefreshMainView(opts *types.ViewUpdateOpts, context types.Contex
 		// panel, and so must not wrap.
 		_, isFuncTask := opts.Task.(*types.RenderFuncTask)
 		view.Wrap = !isFuncTask && (!mainContext.ContentIsDiff() || gui.c.UserConfig().Gui.WrapLinesInDiffView)
-		// Dragging the mouse selects text, or diff lines when it starts on the
-		// gutter of a diff (see gui.mouseTextSelection and views.go).
+		// Dragging the mouse selects text,
+		// or diff lines when it starts on the gutter of a diff
+		// (see gui.mouseTextSelection and views.go).
 		view.TextSelectable = gui.c.UserConfig().Gui.MouseTextSelection
 		view.ClearTextSelection()
 		// The files named in the diffstat are linked to where their diff begins, over a

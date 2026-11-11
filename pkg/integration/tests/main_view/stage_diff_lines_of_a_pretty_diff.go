@@ -28,8 +28,8 @@ var StageDiffLinesOfAPrettyDiff = NewIntegrationTest(NewIntegrationTestArgs{
 			).
 			Press(keys.Universal.FocusMainView)
 
-		// The pretty layout stays on screen when the main view is focused: the rows
-		// have line numbers in a gutter in front of them.
+		// The pretty layout stays on screen when the main view is focused:
+		// the rows have line numbers in a gutter in front of them.
 		t.Views().Main().
 			IsFocused().
 			ContainsLines(

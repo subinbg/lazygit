@@ -7,10 +7,11 @@ import (
 	"github.com/samber/lo"
 )
 
-// RemoteBranchesContext lists remote branches. Upstream, it shows the branches
-// of the remote entered from the remotes list and is transient (escape returns
-// to that list). With gui.unfoldRemotes it is the Remotes tab itself and lists
-// every remote's branches, under a header per remote.
+// RemoteBranchesContext lists remote branches.
+// Upstream, it shows the branches of the remote entered from the remotes list
+// and is transient (escape returns to that list).
+// With gui.unfoldRemotes it is the Remotes tab itself
+// and lists every remote's branches, under a header per remote.
 type RemoteBranchesContext struct {
 	*FilteredListViewModel[*models.RemoteBranch]
 	*ListContextTrait
@@ -64,8 +65,8 @@ func NewRemoteBranchesContext(
 		})
 	}
 
-	// Headers above each remote's branches (when unfolded) and above groups of
-	// branches sharing a name prefix
+	// Headers above each remote's branches (when unfolded)
+	// and above groups of branches sharing a name prefix
 	getNonModelItems := func() []*NonModelItem {
 		headers, _ := presentation.RemoteListHeaders(viewModel.GetItems(), unfolded, groupingEnabled())
 		column := presentation.RemoteBranchNameColumn(showRecency, showCommitHash())

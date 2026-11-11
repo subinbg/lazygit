@@ -25,13 +25,14 @@ type MainContext struct {
 	// is any content to look at.
 	contentIsDiff bool
 	// pendingClick is a click on this pane whose press started a text selection
-	// (see gui.mouseTextSelection): it acts on release, unless the press turned
-	// into a drag that selected text.
+	// (see gui.mouseTextSelection):
+	// it acts on release,
+	// unless the press turned into a drag that selected text.
 	pendingClick func() error
 }
 
-// SetPendingClick holds a click until the mouse button is released (see
-// pendingClick).
+// SetPendingClick holds a click until the mouse button is released
+// (see pendingClick).
 func (self *MainContext) SetPendingClick(click func() error) {
 	self.pendingClick = click
 }

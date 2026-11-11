@@ -212,9 +212,10 @@ type SessionState struct {
 	CheckedOutBranch       *Branch
 }
 
-// selectedRemote is the selected remote: the selected row of the remotes
-// list, or, with gui.unfoldRemotes (where that list isn't shown), the remote
-// of the selected remote branch.
+// selectedRemote is the selected remote:
+// the selected row of the remotes list, or,
+// with gui.unfoldRemotes (where that list isn't shown),
+// the remote of the selected remote branch.
 func (self *SessionStateLoader) selectedRemote() *models.Remote {
 	if !self.c.UserConfig().Gui.UnfoldRemotes {
 		return self.c.Contexts().Remotes.GetSelected()

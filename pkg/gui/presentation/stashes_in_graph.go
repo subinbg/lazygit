@@ -18,11 +18,13 @@ type stashPlacement struct {
 	entry *models.StashEntry
 }
 
-// placeStashes places the stashes made on one of the commits: each goes above
-// the first commit older than the stash, like the commits of a date-ordered
-// log, but never below the commit it was made on. A stash made on a commit that
-// isn't among them (one not loaded yet, or no longer on any branch) is left
-// out. The placements are in the order of their rows.
+// placeStashes places the stashes made on one of the commits:
+// each goes above the first commit older than the stash,
+// like the commits of a date-ordered log,
+// but never below the commit it was made on.
+// A stash made on a commit that isn't among them
+// (one not loaded yet, or no longer on any branch) is left out.
+// The placements are in the order of their rows.
 func placeStashes(commits []*models.Commit, stashes []*models.StashEntry) []stashPlacement {
 	if len(stashes) == 0 {
 		return nil
@@ -76,12 +78,14 @@ type StashRow struct {
 	Content string
 }
 
-// StashRows returns the rows the commits list shows for opts.Stashes, like
-// GitKraken's stash nodes: the stash's node in the lanes graph, with a dotted
-// line to the commit it was made on, followed by a label and the stash's
-// message. opts are the ones the list is rendered with, so that the rows are
-// laid out in the same graph. There are none when the graph is hidden or not in
-// the lanes style.
+// StashRows returns the rows the commits list shows for opts.Stashes,
+// like GitKraken's stash nodes:
+// the stash's node in the lanes graph,
+// with a dotted line to the commit it was made on,
+// followed by a label and the stash's message.
+// opts are the ones the list is rendered with,
+// so that the rows are laid out in the same graph.
+// There are none when the graph is hidden or not in the lanes style.
 func StashRows(common *common.Common, commits []*models.Commit, showGraph bool, opts CommitListOpts) []StashRow {
 	if !showGraph || len(commits) == 0 || len(opts.Stashes) == 0 ||
 		common.UserConfig().Git.Log.GraphStyle == "classic" {

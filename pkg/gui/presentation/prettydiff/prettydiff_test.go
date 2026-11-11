@@ -112,8 +112,9 @@ func TestRendererStylesEmphasisAndFill(t *testing.T) {
 	assert.Equal(t, "      1 │+abc", plain.Add(1, "abc", []Span{{1, 2}}, true))
 }
 
-// format returns the pretty layout of input as it shows on screen, i.e.
-// without the records stating which line each row shows (see formatWithRecords).
+// format returns the pretty layout of input as it shows on screen,
+// i.e. without the records stating which line each row shows
+// (see formatWithRecords).
 func format(t *testing.T, input string) string {
 	t.Helper()
 	return recordRegexp.ReplaceAllString(formatWithRecords(t, input), "")
@@ -128,8 +129,8 @@ func formatWithRecords(t *testing.T, input string) string {
 
 var recordRegexp = regexp.MustCompile(`\x1b\]1717;([^\x07]*)\x07`)
 
-// records returns, for each row of a rendering, the payload of the record it
-// starts with, or "" for a row without one.
+// records returns, for each row of a rendering,
+// the payload of the record it starts with, or "" for a row without one.
 func records(rendering string) []string {
 	rows := strings.Split(strings.TrimSuffix(rendering, "\n"), "\n")
 	result := make([]string, len(rows))

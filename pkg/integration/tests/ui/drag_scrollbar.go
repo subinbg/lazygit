@@ -60,8 +60,8 @@ var DragScrollbar = NewIntegrationTest(NewIntegrationTestArgs{
 			DragScrollbar(0, mainHeight-1).
 			OriginYAtLeast(mainHeight)
 
-		// The commits view renders only the commits in view, so the ones the
-		// scrollbar brings into view are rendered too.
+		// The commits view renders only the commits in view,
+		// so the ones the scrollbar brings into view are rendered too.
 		_, commitsHeight := t.Views().Commits().InnerSize()
 		t.Views().Commits().
 			IsFocused().

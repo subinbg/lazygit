@@ -1,11 +1,14 @@
 // Package prettydiff renders unified diffs the way graphical git clients do:
-// with old and new line numbers in a gutter, added and removed lines on tinted
-// backgrounds, the words that changed within a line highlighted, and each
-// file introduced by a header with its counts of added and removed lines.
+// with old and new line numbers in a gutter,
+// added and removed lines on tinted backgrounds,
+// the words that changed within a line highlighted,
+// and each file introduced by a header
+// with its counts of added and removed lines.
 //
-// It formats both the diffs streamed into the main panel from git (Reader) and
-// the patches of the staging and patch-building panels (Renderer, used by the
-// patch package), so a diff looks the same wherever it is shown.
+// It formats both the diffs streamed into the main panel from git (Reader)
+// and the patches of the staging and patch-building panels
+// (Renderer, used by the patch package),
+// so a diff looks the same wherever it is shown.
 package prettydiff
 
 import (
@@ -71,8 +74,8 @@ var (
 	})
 )
 
-// ThemeByName returns the theme of the given name ("dark" or "light"); any
-// other name gives the dark theme.
+// ThemeByName returns the theme of the given name ("dark" or "light");
+// any other name gives the dark theme.
 func ThemeByName(name string) Theme {
 	if strings.EqualFold(name, "light") {
 		return lightTheme
@@ -80,8 +83,8 @@ func ThemeByName(name string) Theme {
 	return darkTheme
 }
 
-// ThemeIf returns the theme of the given name when enabled, and nil
-// otherwise: the form the patch formatting takes its options in.
+// ThemeIf returns the theme of the given name when enabled, and nil otherwise:
+// the form the patch formatting takes its options in.
 func ThemeIf(enabled bool, name string) *Theme {
 	if !enabled {
 		return nil

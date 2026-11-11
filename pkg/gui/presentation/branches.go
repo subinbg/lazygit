@@ -218,9 +218,10 @@ func matchBranchColorPattern(name string) (style.TextStyle, bool) {
 	return style.TextStyle{}, false
 }
 
-// GetBranchTextStyleForBranch is like GetBranchTextStyle but, when no
-// explicit pattern matches, prefers the color of the graph lane holding the
-// branch's head commit, so the branches panel matches the commit graph.
+// GetBranchTextStyleForBranch is like GetBranchTextStyle but,
+// when no explicit pattern matches,
+// prefers the color of the graph lane holding the branch's head commit,
+// so the branches panel matches the commit graph.
 func GetBranchTextStyleForBranch(b *models.Branch) style.TextStyle {
 	if style, ok := matchBranchColorPattern(b.Name); ok {
 		return style
@@ -233,9 +234,11 @@ func GetBranchTextStyleForBranch(b *models.Branch) style.TextStyle {
 	return *palette.ByName(b.Name)
 }
 
-// GetRemoteBranchTextStyle colors a remote branch like the graph lane of the
-// commit it points at, falling back to a stable per-name color. Explicit
-// branchColorPatterns match the branch name without the remote, as before.
+// GetRemoteBranchTextStyle colors a remote branch
+// like the graph lane of the commit it points at,
+// falling back to a stable per-name color.
+// Explicit branchColorPatterns match the branch name
+// without the remote, as before.
 func GetRemoteBranchTextStyle(b *models.RemoteBranch) style.TextStyle {
 	if style, ok := matchBranchColorPattern(b.Name); ok {
 		return style

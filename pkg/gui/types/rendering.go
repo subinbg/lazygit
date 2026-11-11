@@ -128,15 +128,17 @@ func NewRunCommandTaskWithPrefix(cmd *exec.Cmd, prefix Prefix) *RunCommandTask {
 	return &RunCommandTask{Cmd: cmd, Prefix: prefix}
 }
 
-// RenderFuncTask shows content that a function computes on a background
-// goroutine, e.g. from git commands whose output lazygit formats itself. Key
-// identifies the content the way RenderStringTask's string does: when it
-// changes, the view scrolls back to the top.
+// RenderFuncTask shows content that a function computes
+// on a background goroutine,
+// e.g. from git commands whose output lazygit formats itself.
+// Key identifies the content the way RenderStringTask's string does:
+// when it changes, the view scrolls back to the top.
 type RenderFuncTask struct {
 	Key    string
 	Prefix Prefix
-	// Render returns the content to show. stop is closed when the task is
-	// superseded, in which case the result is discarded.
+	// Render returns the content to show.
+	// stop is closed when the task is superseded,
+	// in which case the result is discarded.
 	Render func(stop <-chan struct{}) string
 }
 

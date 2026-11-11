@@ -84,10 +84,11 @@ func (gui *Gui) plainRender(spec renderSpec) (startRender, onCloseRender) {
 	return start, onClose
 }
 
-// prettyDiffFilter returns a filter formatting the unified diffs in a
-// command's output (see gui.prettyDiff), or nil when that's off or something
-// else lays the diff out: a custom diff renderer (pager or external diff
-// command), or git itself when given arguments such as --word-diff.
+// prettyDiffFilter returns a filter formatting the unified diffs
+// in a command's output (see gui.prettyDiff),
+// or nil when that's off or something else lays the diff out:
+// a custom diff renderer (pager or external diff command),
+// or git itself when given arguments such as --word-diff.
 func (gui *Gui) prettyDiffFilter() func(io.Reader) io.Reader {
 	userConfig := gui.c.UserConfig()
 	if !userConfig.Gui.PrettyDiff {
@@ -194,19 +195,21 @@ func (gui *Gui) newStringTaskWithKey(view *gocui.View, str string, key string) e
 	return nil
 }
 
-// newFuncTask renders content computed on the task's goroutine (see
-// types.RenderFuncTask). Like newStringTask, the view scrolls back to the top
-// only when the key differs from the previous task's, so that a re-render of
-// the same content keeps the scroll position.
+// newFuncTask renders content computed on the task's goroutine
+// (see types.RenderFuncTask).
+// Like newStringTask,
+// the view scrolls back to the top only
+// when the key differs from the previous task's,
+// so that a re-render of the same content keeps the scroll position.
 func (gui *Gui) newFuncTask(view *gocui.View, key string, prefix types.Prefix, render func(stop <-chan struct{}) string) error {
 	manager := gui.getManager(view)
-	// Whatever the view was going to be put back to belonged to a re-render of
-	// other content (see newStringTaskWithKey).
+	// Whatever the view was going to be put back to belonged
+	// to a re-render of other content (see newStringTaskWithKey).
 	manager.DropRestoreForNextTask()
 	resetOrigin := manager.GetTaskKey() != key
 
-	// The prefix is laid out here, on the UI thread; its text is produced on
-	// the task's goroutine.
+	// The prefix is laid out here, on the UI thread;
+	// its text is produced on the task's goroutine.
 	producePrefix := func() string { return "" }
 	if prefix != nil {
 		producePrefix = prefix(view.InnerWidth())

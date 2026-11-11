@@ -55,8 +55,9 @@ func NewBranchesContext(c *ContextCommon) *BranchesContext {
 		)
 	}
 
-	// Folder headers above groups of branches sharing a name prefix, aligned
-	// with the branch name column (recency, PR icon, optional commit hash).
+	// Folder headers above groups of branches sharing a name prefix,
+	// aligned with the branch name column
+	// (recency, PR icon, optional commit hash).
 	getNonModelItems := func() []*NonModelItem {
 		if !groupingEnabled() {
 			return nil

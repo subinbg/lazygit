@@ -16,9 +16,11 @@ import (
 	"github.com/samber/lo"
 )
 
-// LogGraphHelper renders a commit log into the main panel using lazygit's own
-// commit list rendering (graph, ref labels, authors, dates), as an alternative
-// to showing the output of `git log --graph` (see gui.mainViewCommitGraph).
+// LogGraphHelper renders a commit log
+// into the main panel using lazygit's own commit list rendering
+// (graph, ref labels, authors, dates),
+// as an alternative to showing the output of `git log --graph`
+// (see gui.mainViewCommitGraph).
 type LogGraphHelper struct {
 	c *HelperCommon
 }
@@ -37,16 +39,16 @@ func (self *LogGraphHelper) BranchTask(branch *models.Branch) *types.RenderFuncT
 	return self.RefTask(branch, branch)
 }
 
-// RefTask returns a task rendering the log of any ref (a remote branch, a
-// tag). refForPushedStatus is the local branch whose unpushed commits are
-// marked, or nil.
+// RefTask returns a task rendering the log of any ref (a remote branch, a tag).
+// refForPushedStatus is the local branch
+// whose unpushed commits are marked, or nil.
 func (self *LogGraphHelper) RefTask(ref models.Ref, refForPushedStatus models.Ref) *types.RenderFuncTask {
 	return self.task(ref.FullRefName(), refForPushedStatus, false)
 }
 
-// task captures everything the rendering needs from the model here, on the
-// UI thread, so that the render goroutine doesn't read the model while it's
-// being refreshed.
+// task captures everything the rendering needs from the model here,
+// on the UI thread, so that the render goroutine doesn't read the model
+// while it's being refreshed.
 func (self *LogGraphHelper) task(refName string, refForPushedStatus models.Ref, all bool) *types.RenderFuncTask {
 	branches := self.c.Model().Branches
 	worktrees := self.c.Model().Worktrees
@@ -125,8 +127,8 @@ func (self *LogGraphHelper) task(refName string, refForPushedStatus models.Ref, 
 	return types.NewRenderFuncTask(key, render)
 }
 
-// graphSymbolSet returns the symbols the classic graph is drawn with, as the
-// commits panel chooses them (see gui.commitGraphStyle).
+// graphSymbolSet returns the symbols the classic graph is drawn with,
+// as the commits panel chooses them (see gui.commitGraphStyle).
 func (self *LogGraphHelper) graphSymbolSet() graph.SymbolSet {
 	switch self.c.UserConfig().Gui.CommitGraphStyle {
 	case "detailed":

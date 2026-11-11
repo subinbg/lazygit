@@ -37,8 +37,8 @@ type laneGraphCacheKey struct {
 	stashes string
 }
 
-// laneGraphCacheEntry is a built lanes-style graph plus the data derived from
-// it that renders reuse.
+// laneGraphCacheEntry is a built lanes-style graph plus the data derived
+// from it that renders reuse.
 type laneGraphCacheEntry struct {
 	graph      *lanegraph.Graph
 	laneStyles map[string]*style.TextStyle
@@ -52,10 +52,11 @@ var (
 	laneGraphCache = make(map[laneGraphCacheKey]*laneGraphCacheEntry)
 	mutex          deadlock.Mutex
 
-	// lane styles of every commit in the loaded graph(s), by commit hash and
-	// by the name of each ref pointing at the commit ("main", "origin/main",
-	// "v1.0.0"), published so that other panels (branches, remote branches,
-	// status) can color a ref like its commit's lane
+	// lane styles of every commit in the loaded graph(s),
+	// by commit hash and by the name of each ref pointing at the commit
+	// ("main", "origin/main", "v1.0.0"),
+	// published so that other panels (branches, remote branches, status)
+	// can color a ref like its commit's lane
 	laneStyleRegistry      = map[string]*style.TextStyle{}
 	refLaneStyleRegistry   = map[string]*style.TextStyle{}
 	laneStyleRegistryMutex deadlock.RWMutex
@@ -63,17 +64,19 @@ var (
 
 // CommitListOpts holds this fork's options for GetCommitListDisplayStrings.
 type CommitListOpts struct {
-	// The list shows a working-tree row above the commits (see
-	// FormatWorkingTreeRow), which the lanes graph draws as a dotted node
-	// connected to the HEAD commit. Only meaningful for the local commits
-	// list, when not rebasing.
+	// The list shows a working-tree row above the commits
+	// (see FormatWorkingTreeRow),
+	// which the lanes graph draws as a dotted node connected
+	// to the HEAD commit.
+	// Only meaningful for the local commits list, when not rebasing.
 	WorkingTreeRow bool
 	// Publish the lane colors of the commits and of the refs pointing at them
-	// for the other panels (branches, remotes, status). Only the main commits
-	// panel should do this, so that a branch keeps one color everywhere.
+	// for the other panels (branches, remotes, status).
+	// Only the main commits panel should do this,
+	// so that a branch keeps one color everywhere.
 	PublishLaneStyles bool
-	// The stashes the lanes graph shows rows for (see StashRows). Only
-	// meaningful for the local commits list, when not rebasing.
+	// The stashes the lanes graph shows rows for (see StashRows).
+	// Only meaningful for the local commits list, when not rebasing.
 	Stashes []*models.StashEntry
 }
 
@@ -370,10 +373,11 @@ func indexOfFirstNonTODOCommit(commits []*models.Commit) int {
 	return 0
 }
 
-// renderGraph renders the graph lines of commits[start:end] in the configured
-// style (see LogConfig.GraphStyle), and returns them along with the lane
-// style of every commit in the graph. Both are derived from a cached layout
-// of the whole commit list. The caller must hold the mutex.
+// renderGraph renders the graph lines of commits[start:end]
+// in the configured style (see LogConfig.GraphStyle),
+// and returns them along with the lane style of every commit in the graph.
+// Both are derived from a cached layout of the whole commit list.
+// The caller must hold the mutex.
 func renderGraph(
 	common *common.Common,
 	commits []*models.Commit,
@@ -405,11 +409,12 @@ func renderGraph(
 }
 
 // WorkingTreeGraphRow returns the graph cells of the working-tree row shown
-// above the commits (a dotted node in the HEAD commit's lane), padded to the
-// width of the graph so that the text after it lines up with the commit
-// subjects. It's empty when the graph is hidden or not in the lanes style.
-// opts are the ones the list is rendered with, so that the row is laid out in
-// the same graph.
+// above the commits (a dotted node in the HEAD commit's lane),
+// padded to the width of the graph
+// so that the text after it lines up with the commit subjects.
+// It's empty when the graph is hidden or not in the lanes style.
+// opts are the ones the list is rendered with,
+// so that the row is laid out in the same graph.
 func WorkingTreeGraphRow(common *common.Common, commits []*models.Commit, showGraph bool, opts CommitListOpts) string {
 	if !showGraph || len(commits) == 0 || common.UserConfig().Git.Log.GraphStyle == "classic" {
 		return ""
@@ -424,7 +429,8 @@ func WorkingTreeGraphRow(common *common.Common, commits []*models.Commit, showGr
 }
 
 // loadLaneGraph returns the cached lanes-style layout of the commits,
-// building it if needed. The caller must hold the mutex.
+// building it if needed.
+// The caller must hold the mutex.
 func loadLaneGraph(commits []*models.Commit, opts CommitListOpts) *laneGraphCacheEntry {
 	cacheKey := laneGraphCacheKey{
 		pipeSetCacheKey: pipeSetCacheKey{
@@ -439,8 +445,8 @@ func loadLaneGraph(commits []*models.Commit, opts CommitListOpts) *laneGraphCach
 
 	entry, ok := laneGraphCache[cacheKey]
 	if !ok {
-		// the cache only needs to hold the graphs of the lists currently on
-		// screen; anything older is just memory
+		// the cache only needs to hold the graphs of the lists currently
+		// on screen; anything older is just memory
 		if len(laneGraphCache) >= 8 {
 			laneGraphCache = make(map[laneGraphCacheKey]*laneGraphCacheEntry)
 		}
@@ -463,8 +469,8 @@ func loadLaneGraph(commits []*models.Commit, opts CommitListOpts) *laneGraphCach
 	return entry
 }
 
-// HeadCommitHash returns the hash of the commit HEAD points at, as told by
-// the refs decorating the commits, or "" if none of them is HEAD.
+// HeadCommitHash returns the hash of the commit HEAD points at,
+// as told by the refs decorating the commits, or "" if none of them is HEAD.
 func HeadCommitHash(commits []*models.Commit) string {
 	for _, commit := range commits {
 		for _, ref := range commit.Refs {
@@ -792,11 +798,12 @@ func actionColorMap(action todo.TodoCommand, status models.CommitStatus) style.T
 	}
 }
 
-// coloredExtraInfo renders a decoration string like
-// "(HEAD -> master, origin/master, tag: v0.15.2)" colored like the graph
-// lane of the commit it decorates, so branch names match their graph lines.
-// Without a lane style (graph hidden or commit outside it), each ref gets a
-// stable palette color derived from its name instead.
+// coloredExtraInfo renders a decoration string
+// like "(HEAD -> master, origin/master, tag: v0.15.2)" colored
+// like the graph lane of the commit it decorates,
+// so branch names match their graph lines.
+// Without a lane style (graph hidden or commit outside it),
+// each ref gets a stable palette color derived from its name instead.
 func coloredExtraInfo(extraInfo string, laneStyle *style.TextStyle) string {
 	if laneStyle != nil {
 		return laneStyle.SetBold().Sprint(extraInfo)

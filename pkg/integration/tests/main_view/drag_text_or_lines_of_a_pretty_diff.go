@@ -27,9 +27,10 @@ var DragTextOrLinesOfAPrettyDiff = NewIntegrationTest(NewIntegrationTestArgs{
 			IsFocused().
 			Press(keys.Universal.FocusMainView)
 
-		// The rows: the file's header, the hunk's, " one", " two", "+ADD1", "+ADD2",
-		// " three". Each line of the file starts with a gutter of line numbers that
-		// ends in a "│" at column 8.
+		// The rows: the file's header, the hunk's, " one", " two", "+ADD1",
+		// "+ADD2", " three".
+		// Each line of the file starts with a gutter of line numbers
+		// that ends in a "│" at column 8.
 		t.Views().Main().
 			IsFocused().
 			ContainsLines(
@@ -44,8 +45,8 @@ var DragTextOrLinesOfAPrettyDiff = NewIntegrationTest(NewIntegrationTestArgs{
 				Contains("│+ADD2"),
 			)
 
-		// Dragging over the text copies the text as it reads on screen, and leaves
-		// the selected diff lines alone.
+		// Dragging over the text copies the text as it reads on screen,
+		// and leaves the selected diff lines alone.
 		t.Views().Main().
 			IsFocused().
 			ClickAndHold(10, 4).

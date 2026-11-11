@@ -21,11 +21,11 @@ func StripANSI(s string) string {
 	return ansiRegexp.ReplaceAllString(s, "")
 }
 
-// Reader formats the unified diffs found in the output of a git command, line
-// by line, and passes everything else (commit headers, stat summaries, log
-// output) through unchanged. Each file's diff is formatted once it has been
-// read completely, so that its header can show the counts of added and
-// removed lines.
+// Reader formats the unified diffs found in the output of a git command,
+// line by line, and passes everything else
+// (commit headers, stat summaries, log output) through unchanged.
+// Each file's diff is formatted once it has been read completely,
+// so that its header can show the counts of added and removed lines.
 type Reader struct {
 	src   *bufio.Reader
 	theme Theme
@@ -91,8 +91,8 @@ func (r *Reader) processLine(line string) {
 		return
 	}
 	if match := submoduleLineRegexp.FindStringSubmatch(plain); match != nil {
-		// a submodule's line is its part of the diff, the way a file's diff
-		// is; it ends the file before it
+		// a submodule's line is its part of the diff, the way a file's diff is;
+		// it ends the file before it
 		r.flushSection()
 		r.emit(record(recordFileHeader, 0, 0, match[1]) + line)
 		return
@@ -125,11 +125,12 @@ type hunk struct {
 	oldLineMax, newLineMax int
 }
 
-// FormatSection formats one file's diff: the lines from its "diff --git"
-// line up to the next file. Diffs that are not plain unified diffs of one
-// file (combined diffs of merges, binary patches) are returned as they are.
-// separate adds an empty line before the header, to separate the file from
-// the previous one.
+// FormatSection formats one file's diff:
+// the lines from its "diff --git" line up to the next file.
+// Diffs that are not plain unified diffs of one file
+// (combined diffs of merges, binary patches) are returned as they are.
+// separate adds an empty line before the header,
+// to separate the file from the previous one.
 func FormatSection(rawLines []string, theme Theme, separate bool) []string {
 	lines := make([]string, len(rawLines))
 	for i, line := range rawLines {
@@ -186,8 +187,8 @@ func FormatSection(rawLines []string, theme Theme, separate bool) []string {
 }
 
 // ParseExtendedHeader reads the lines between "diff --git" and the first hunk
-// and returns the file's path and the facts worth showing about it ("new
-// file", "renamed from ...").
+// and returns the file's path and the facts worth showing about it
+// ("new file", "renamed from ...").
 func ParseExtendedHeader(diffLine string, header []string) (string, []string) {
 	usesPrefixes := strings.HasPrefix(strings.TrimPrefix(diffLine, "diff --git "), "a/")
 	stripPrefix := func(path string, prefix string) string {
@@ -295,16 +296,16 @@ func atoiDefault(s string, def int) int {
 	return atoi(s)
 }
 
-// A block is a run of removed lines followed by a run of added lines (with
-// possibly a "no newline" marker in between), whose lines are compared word
-// by word.
+// A block is a run of removed lines followed by a run of added lines
+// (with possibly a "no newline" marker in between),
+// whose lines are compared word by word.
 type blockLine struct {
 	marker byte
 	text   string
 }
 
-// renderHunkBody renders the lines of a hunk, each with the record of the line of
-// path it shows.
+// renderHunkBody renders the lines of a hunk,
+// each with the record of the line of path it shows.
 func renderHunkBody(renderer *Renderer, lines []string, oldStart int, newStart int, path string) []string {
 	result := make([]string, 0, len(lines))
 	oldNo, newNo := oldStart, newStart

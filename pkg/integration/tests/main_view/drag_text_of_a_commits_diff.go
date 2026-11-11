@@ -40,7 +40,8 @@ var DragTextOfACommitsDiff = NewIntegrationTest(NewIntegrationTestArgs{
 		t.FileSystem().FileContent("clipboard", Equals("commit"))
 		t.Shell().DeleteFile("clipboard")
 
-		// The focus stayed in the commits panel, so the keys still move through it.
+		// The focus stayed in the commits panel,
+		// so the keys still move through it.
 		t.Views().Commits().
 			IsFocused().
 			Press(keys.Universal.NextItem).
@@ -49,7 +50,8 @@ var DragTextOfACommitsDiff = NewIntegrationTest(NewIntegrationTestArgs{
 				Contains("first commit").IsSelected(),
 			)
 
-		// A click without a drag focuses the main view, as without text selection.
+		// A click without a drag focuses the main view,
+		// as without text selection.
 		t.Views().Main().
 			Click(0, 0).
 			IsFocused()

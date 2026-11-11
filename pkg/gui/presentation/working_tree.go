@@ -11,8 +11,9 @@ import (
 	"github.com/jesseduffield/lazygit/pkg/theme"
 )
 
-// WorkingTreeCounts summarises the working tree: files with staged changes,
-// files with unstaged changes (a file can be both), and untracked files.
+// WorkingTreeCounts summarises the working tree:
+// files with staged changes, files with unstaged changes (a file can be both),
+// and untracked files.
 type WorkingTreeCounts struct {
 	Staged    int
 	Unstaged  int
@@ -36,10 +37,11 @@ func CountWorkingTreeChanges(files []*models.File) WorkingTreeCounts {
 	return counts
 }
 
-// StagingSectionSizes returns how many of the files belong to the "unstaged"
-// section of the files view (files with unstaged changes, including untracked
-// ones) and how many to the "staged" section (files whose changes are all
-// staged). The flat files view lists them in that order.
+// StagingSectionSizes returns how many of the files belong
+// to the "unstaged" section of the files view
+// (files with unstaged changes, including untracked ones)
+// and how many to the "staged" section (files whose changes are all staged).
+// The flat files view lists them in that order.
 func StagingSectionSizes(files []*models.File) (unstaged int, staged int) {
 	for _, file := range files {
 		if InUnstagedSection(file) {
@@ -55,8 +57,8 @@ func InUnstagedSection(file *models.File) bool {
 	return filetree.InUnstagedSection(file)
 }
 
-// fileTreeSectionLine renders the node of a section of the files tree view (see
-// filetree.BuildSectionedTreeFromFiles): "▼ Unstaged files (3)".
+// fileTreeSectionLine renders the node of a section of the files tree view
+// (see filetree.BuildSectionedTreeFromFiles): "▼ Unstaged files (3)".
 func fileTreeSectionLine(node *filetree.Node[models.File], isCollapsed bool, tr *i18n.TranslationSet) string {
 	arrow := EXPANDED_ARROW
 	if isCollapsed {
@@ -69,11 +71,11 @@ func fileTreeSectionLine(node *filetree.Node[models.File], isCollapsed bool, tr 
 	return theme.DefaultTextColor.SetBold().Sprintf("%s %s (%d)", arrow, label, len(node.GetLeaves()))
 }
 
-// FormatWorkingTreeRow renders the "WIP" row shown above the commits when the
-// working tree has changes, like GitKraken's work-in-progress node:
+// FormatWorkingTreeRow renders the "WIP" row shown above the commits
+// when the working tree has changes, like GitKraken's work-in-progress node:
 // "◌ WIP · 1 staged · 2 unstaged · 1 untracked" (zero counts are omitted).
-// withMarker prepends the "◌" node glyph; pass false when the graph draws the
-// node itself (see WorkingTreeGraphRow).
+// withMarker prepends the "◌" node glyph;
+// pass false when the graph draws the node itself (see WorkingTreeGraphRow).
 func FormatWorkingTreeRow(files []*models.File, tr *i18n.TranslationSet, withMarker bool) string {
 	counts := CountWorkingTreeChanges(files)
 	parts := []string{}

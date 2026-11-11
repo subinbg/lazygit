@@ -9,24 +9,26 @@ import (
 	"github.com/samber/lo"
 )
 
-// RemoteBranchListOpts controls how the rows of a remote branches list are
-// rendered.
+// RemoteBranchListOpts controls
+// how the rows of a remote branches list are rendered.
 type RemoteBranchListOpts struct {
 	DiffName string
 	// The folder each branch is shown under, by full name ("origin/feature/x");
 	// see RemoteListHeaders.
 	GroupPrefixes map[string]string
-	// Show the age of the last commit and its hash, like the local branches
-	// list does. Upstream's list shows names only.
+	// Show the age of the last commit and its hash,
+	// like the local branches list does.
+	// Upstream's list shows names only.
 	ShowRecency    bool
 	ShowCommitHash bool
-	// Prepended to every name, e.g. when the branches sit under a remote header.
+	// Prepended to every name,
+	// e.g. when the branches sit under a remote header.
 	Indent string
 }
 
-// GetRemoteBranchListDisplayStrings renders the rows of a remote branches
-// list, with the same columns as the local branches list: recency, commit
-// hash, (icon,) name.
+// GetRemoteBranchListDisplayStrings renders the rows of a remote branches list,
+// with the same columns as the local branches list:
+// recency, commit hash, (icon,) name.
 func GetRemoteBranchListDisplayStrings(branches []*models.RemoteBranch, opts RemoteBranchListOpts) [][]string {
 	return lo.Map(branches, func(branch *models.RemoteBranch, _ int) []string {
 		return getRemoteBranchDisplayStrings(branch, opts)
@@ -53,9 +55,9 @@ func getRemoteBranchDisplayStrings(b *models.RemoteBranch, opts RemoteBranchList
 	return res
 }
 
-// RemoteBranchNameColumn is the index of the name column in the rows of
-// GetRemoteBranchListDisplayStrings, which the remote and folder headers are
-// aligned with.
+// RemoteBranchNameColumn is the index of the name column
+// in the rows of GetRemoteBranchListDisplayStrings,
+// which the remote and folder headers are aligned with.
 func RemoteBranchNameColumn(showRecency bool, showCommitHash bool) int {
 	column := 0
 	if showRecency {
@@ -70,8 +72,8 @@ func RemoteBranchNameColumn(showRecency bool, showCommitHash bool) int {
 	return column
 }
 
-// FormatRemoteHeader renders the header shown above a remote's branches in the
-// unfolded remotes list.
+// FormatRemoteHeader renders the header shown above a remote's branches
+// in the unfolded remotes list.
 func FormatRemoteHeader(name string) string {
 	marker := "▾"
 	if icons.IsIconEnabled() {
@@ -80,9 +82,10 @@ func FormatRemoteHeader(name string) string {
 	return theme.DefaultTextColor.SetBold().Sprint(marker + " " + name)
 }
 
-// UnfoldRemoteBranches lists every remote's branches one after the other, in
-// the order of the remotes, each remote's branches grouped by name prefix
-// when groupByPrefix is set (see GroupByRefNamePrefix).
+// UnfoldRemoteBranches lists every remote's branches one after the other,
+// in the order of the remotes,
+// each remote's branches grouped by name prefix when groupByPrefix is set
+// (see GroupByRefNamePrefix).
 func UnfoldRemoteBranches(remotes []*models.Remote, groupByPrefix bool) []*models.RemoteBranch {
 	items := []*models.RemoteBranch{}
 	for _, remote := range remotes {
@@ -97,8 +100,8 @@ func UnfoldRemoteBranches(remotes []*models.Remote, groupByPrefix bool) []*model
 
 func remoteBranchName(b *models.RemoteBranch) string { return b.Name }
 
-// RemoteListHeader is a non-selectable row of a remote branches list: the
-// header of a remote (Remote set) or of a folder of branches (Prefix set),
+// RemoteListHeader is a non-selectable row of a remote branches list:
+// the header of a remote (Remote set) or of a folder of branches (Prefix set),
 // inserted at Index.
 type RemoteListHeader struct {
 	Index  int
@@ -106,12 +109,15 @@ type RemoteListHeader struct {
 	Prefix string
 }
 
-// RemoteListHeaders derives the headers of a remote branches list from the
-// rows it shows (which may be a filtered subset of UnfoldRemoteBranches, so
-// this only looks at the rows given): a header wherever the remote changes,
-// when withRemoteHeaders is set, and a folder header above each run of
-// branches sharing a name prefix, when groupByPrefix is set. It also returns
-// the folder of each branch under a folder header, by full name.
+// RemoteListHeaders derives the headers of a remote branches list
+// from the rows it shows
+// (which may be a filtered subset of UnfoldRemoteBranches,
+// so this only looks at the rows given):
+// a header wherever the remote changes, when withRemoteHeaders is set,
+// and a folder header above each run of branches sharing a name prefix,
+// when groupByPrefix is set.
+// It also returns the folder of each branch under a folder header,
+// by full name.
 func RemoteListHeaders(items []*models.RemoteBranch, withRemoteHeaders bool, groupByPrefix bool) ([]RemoteListHeader, map[string]string) {
 	headers := []RemoteListHeader{}
 	prefixes := map[string]string{}

@@ -34,9 +34,10 @@ type scrollbarDrag struct {
 	grab int
 }
 
-// isOnScrollbar reports whether the given screen position is on the view's
-// scrollbar, which takes the right edge of its frame while its content is
-// taller than the view.
+// isOnScrollbar reports whether the given screen position is
+// on the view's scrollbar,
+// which takes the right edge of its frame
+// while its content is taller than the view.
 func (v *View) isOnScrollbar(x, y int) bool {
 	if !v.Frame || x != v.x1 || y <= v.y0 || y >= v.y1 {
 		return false
@@ -45,9 +46,10 @@ func (v *View) isOnScrollbar(x, y int) bool {
 	return showScrollbar
 }
 
-// startScrollbarDrag starts dragging the view's scrollbar from a press at the
-// given screen row: on the thumb it takes hold of the thumb where it was
-// pressed; elsewhere it moves the thumb's middle to the row first.
+// startScrollbarDrag starts dragging the view's scrollbar from a press
+// at the given screen row:
+// on the thumb it takes hold of the thumb where it was pressed;
+// elsewhere it moves the thumb's middle to the row first.
 func (g *Gui) startScrollbarDrag(v *View, y int) {
 	_, thumbStart, thumbEnd := calcRealScrollbarStartEnd(v)
 	grab := (thumbEnd - thumbStart) / 2
@@ -59,8 +61,9 @@ func (g *Gui) startScrollbarDrag(v *View, y int) {
 	g.dragScrollbarTo(y)
 }
 
-// dragScrollbarTo scrolls the dragged scrollbar's view so that the thumb's
-// grabbed row is at the given screen row, as far as the thumb can go.
+// dragScrollbarTo scrolls the dragged scrollbar's view
+// so that the thumb's grabbed row is at the given screen row,
+// as far as the thumb can go.
 func (g *Gui) dragScrollbarTo(y int) {
 	v := g.scrollbarDrag.view
 	height := v.InnerHeight()

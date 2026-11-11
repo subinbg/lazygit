@@ -1057,8 +1057,8 @@ func (self *ViewDriver) InnerSize() (width int, height int) {
 	return width, height
 }
 
-// DragScrollbar drags the view's scrollbar, on the right edge of its frame, from
-// one row of the view's content area to another.
+// DragScrollbar drags the view's scrollbar, on the right edge of its frame,
+// from one row of the view's content area to another.
 func (self *ViewDriver) DragScrollbar(fromY, toY int) *ViewDriver {
 	scrollbarX, _ := self.InnerSize()
 	return self.ClickAndHold(scrollbarX, fromY).MouseMove(scrollbarX, toY).MouseRelease()

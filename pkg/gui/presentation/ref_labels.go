@@ -30,12 +30,14 @@ var refKindOrder = map[models.CommitRefKind]int{
 	models.CommitRefOther:        4,
 }
 
-// renderRefLabels renders the refs pointing at a commit as colored labels, in
-// the style of GitKraken: a filled label in the commit's graph lane color for
-// local branches (bold with a check mark for the checked-out branch, with a
-// house mark for a branch checked out in another worktree), a darker one for
-// remote branches and a gold one for tags. The result ends with a space so it
-// can be prepended to the commit subject; it is empty for commits without refs.
+// renderRefLabels renders the refs pointing at a commit as colored labels,
+// in the style of GitKraken:
+// a filled label in the commit's graph lane color for local branches
+// (bold with a check mark for the checked-out branch,
+// with a house mark for a branch checked out in another worktree),
+// a darker one for remote branches and a gold one for tags.
+// The result ends with a space so it can be prepended to the commit subject;
+// it is empty for commits without refs.
 func renderRefLabels(
 	refs []models.CommitRef,
 	laneStyle *style.TextStyle,
@@ -63,7 +65,8 @@ func renderRefLabels(
 		}
 		idx := laneIdx
 		if !hasLane {
-			// graph hidden or commit outside it: fall back to a stable per-name color
+			// graph hidden or commit outside it:
+			// fall back to a stable per-name color
 			idx = palette.IndexForName(ref.Name)
 		}
 		labels = append(labels, renderRefLabel(ref, idx, branchesInOtherWorktrees))

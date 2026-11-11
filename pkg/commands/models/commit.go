@@ -41,8 +41,8 @@ const (
 	DivergenceRight
 )
 
-// CommitRefKind classifies a ref that points at a commit, as reported by
-// `git log --decorate=full`.
+// CommitRefKind classifies a ref that points at a commit,
+// as reported by `git log --decorate=full`.
 type CommitRefKind uint8
 
 const (
@@ -53,8 +53,8 @@ const (
 	CommitRefOther
 )
 
-// CommitRef is a ref that points at a commit: a local branch, a remote branch,
-// a tag, or a detached HEAD.
+// CommitRef is a ref that points at a commit:
+// a local branch, a remote branch, a tag, or a detached HEAD.
 type CommitRef struct {
 	Kind CommitRefKind
 	// Short name, e.g. "main", "origin/main", "v1.0.0", or "HEAD" when detached

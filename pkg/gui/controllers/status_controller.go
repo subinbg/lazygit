@@ -17,10 +17,13 @@ type StatusController struct {
 	baseController
 	c *ControllerCommon
 
-	// With gui.mainViewCommitGraph, the all-branches log shown for the status
-	// panel is lazygit's own commit graph, and the git.allBranchesLogCmds come
-	// after it when cycling through the logs. This is true while one of those
-	// commands is being shown instead of the graph.
+	// With gui.mainViewCommitGraph,
+	// the all-branches log shown
+	// for the status panel is lazygit's own commit graph,
+	// and the git.allBranchesLogCmds come after it
+	// when cycling through the logs.
+	// This is true while one of those commands is being shown
+	// instead of the graph.
 	showingTextLog bool
 }
 
@@ -207,8 +210,9 @@ func (self *StatusController) switchToOrRotateAllBranchesLogsBackward() {
 	self.showAllBranchLogs()
 }
 
-// rotateLog moves to the next (or previous) log view. With the log graph
-// enabled the cycle is: graph, then each of the git.allBranchesLogCmds.
+// rotateLog moves to the next (or previous) log view.
+// With the log graph enabled the cycle is:
+// graph, then each of the git.allBranchesLogCmds.
 func (self *StatusController) rotateLog(forward bool) {
 	if !self.usesLogGraph() {
 		if forward {

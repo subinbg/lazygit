@@ -166,13 +166,15 @@ type View struct {
 	// Overwrite enables or disables the overwrite mode of the view.
 	Overwrite bool
 
-	// TextSelectable lets the mouse select text in the view: pressing the
-	// left button starts a selection at the pointer, dragging extends it, and
-	// SelectedText returns it. Selected cells are drawn in reverse video.
+	// TextSelectable lets the mouse select text in the view:
+	// pressing the left button starts a selection at the pointer,
+	// dragging extends it, and SelectedText returns it.
+	// Selected cells are drawn in reverse video.
 	TextSelectable bool
-	// CanStartTextSelection, if set, decides whether pressing the left button
-	// at a content position starts a text selection, so that a drag from
-	// there can mean something else.
+	// CanStartTextSelection, if set,
+	// decides whether pressing the left button
+	// at a content position starts a text selection,
+	// so that a drag from there can mean something else.
 	CanStartTextSelection func(x, y int) bool
 	textSelection         *textSelection
 
@@ -667,10 +669,10 @@ func (v *View) FocusPoint(cx int, cy int, scrollIntoView bool) {
 	v.cy = cy - v.oy
 }
 
-// textSelection is a stretch of text selected with the mouse, from the cell
-// the button was pressed on (the anchor) to the cell the pointer is on now,
-// both inclusive, in content coordinates: x is the column, y the index of the
-// view line (i.e. after wrapping).
+// textSelection is a stretch of text selected with the mouse,
+// from the cell the button was pressed on (the anchor)
+// to the cell the pointer is on now, both inclusive, in content coordinates:
+// x is the column, y the index of the view line (i.e. after wrapping).
 type textSelection struct {
 	anchorX, anchorY, endX, endY int
 }
@@ -682,8 +684,8 @@ func (v *View) StartTextSelection(x, y int) {
 	v.textSelection = &textSelection{anchorX: x, anchorY: y, endX: x, endY: y}
 }
 
-// ExtendTextSelection moves the end of the text selection to the given
-// content position.
+// ExtendTextSelection moves the end of the text selection
+// to the given content position.
 func (v *View) ExtendTextSelection(x, y int) {
 	if v.textSelection == nil {
 		return
@@ -698,8 +700,8 @@ func (v *View) IsSelectingText() bool {
 	return v.textSelection != nil
 }
 
-// HasTextSelection reports whether some text is selected, i.e. the selection
-// spans more than the cell it started on.
+// HasTextSelection reports whether some text is selected,
+// i.e. the selection spans more than the cell it started on.
 func (v *View) HasTextSelection() bool {
 	s := v.textSelection
 	return s != nil && (s.anchorX != s.endX || s.anchorY != s.endY)
@@ -709,8 +711,7 @@ func (v *View) ClearTextSelection() {
 	v.textSelection = nil
 }
 
-// textSelectionBounds returns the selection's start and end in reading
-// order.
+// textSelectionBounds returns the selection's start and end in reading order.
 func (v *View) textSelectionBounds() (x1, y1, x2, y2 int) {
 	s := v.textSelection
 	if s.anchorY < s.endY || (s.anchorY == s.endY && s.anchorX <= s.endX) {
@@ -748,8 +749,8 @@ func (v *View) ViewLineText(y int) (string, bool) {
 	return cells(v.viewLines[y].line).String(), true
 }
 
-// SelectedText returns the selected text. The segments of a wrapped line are
-// joined back together.
+// SelectedText returns the selected text.
+// The segments of a wrapped line are joined back together.
 func (v *View) SelectedText() string {
 	v.writeMutex.Lock()
 	defer v.writeMutex.Unlock()

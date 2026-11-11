@@ -7,11 +7,12 @@ import (
 )
 
 // parseDecorations parses the %D placeholder of `git log --decorate=full`,
-// e.g. "HEAD -> refs/heads/main, refs/remotes/origin/main, tag: refs/tags/v1.0.0",
-// into typed refs. It also returns the decorations in git's short form
-// ("HEAD -> main, origin/main, tag: v1.0.0"), which is what we show and search
-// as a commit's ExtraInfo. Short-form input is accepted too, in which case
-// branches can't be classified and become CommitRefOther.
+// e.g. "HEAD -> refs/heads/main, refs/remotes/origin/main, tag: refs/tags/v1.0.0", into typed refs.
+// It also returns the decorations in git's short form
+// ("HEAD -> main, origin/main, tag: v1.0.0"),
+// which is what we show and search as a commit's ExtraInfo.
+// Short-form input is accepted too,
+// in which case branches can't be classified and become CommitRefOther.
 func parseDecorations(decorations string) ([]models.CommitRef, string) {
 	fields := strings.Split(decorations, ",")
 	refs := make([]models.CommitRef, 0, len(fields))
@@ -45,7 +46,8 @@ func parseDecorations(decorations string) ([]models.CommitRef, string) {
 			remoteBranch := strings.TrimPrefix(name, "refs/remotes/")
 			short = append(short, remoteBranch)
 			if strings.HasSuffix(remoteBranch, "/HEAD") {
-				// e.g. origin/HEAD, a symbolic ref that duplicates the remote's default branch
+				// e.g. origin/HEAD,
+				// a symbolic ref that duplicates the remote's default branch
 				continue
 			}
 			refs = append(refs, models.CommitRef{Kind: models.CommitRefRemoteBranch, Name: remoteBranch})

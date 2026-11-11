@@ -584,7 +584,8 @@ func TestGetCommitListDisplayStrings(t *testing.T) {
 	}
 
 	common := common.NewDummyCommon()
-	// these scenarios cover the classic rendering; ref labels are tested in ref_labels_test.go
+	// these scenarios cover the classic rendering;
+	// ref labels are tested in ref_labels_test.go
 	common.UserConfig().Gui.ShowRefLabelsInCommitsView = false
 	common.UserConfig().Git.Log.GraphStyle = "classic"
 
