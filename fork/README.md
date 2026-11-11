@@ -6,7 +6,9 @@ on their commits, without any user configuration.
 
 The `custom` branch (the default) is upstream's latest release plus the changes below; `master`
 mirrors upstream. Everything the fork adds for itself lives in `fork/` and
-`.github/workflows/fork-release.yml`.
+`.github/workflows/fork-release.yml`. How the fork came about, round by round (the material
+provided, the instructions and questions, and what changed), is in `fork/HISTORY.md`, which also
+lists every instruction its owner gave, word for word.
 
 ## Changes versus upstream
 
