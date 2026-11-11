@@ -402,6 +402,24 @@ Not carried over.
     which brought back the DevTools rounds 1, 3 and 6 to 10,
     with the appendix below.
 
+### Round 19, 2026-11-10: semantic line breaks everywhere
+
+- Asked (A53): reflow `fork/README.md` and the code comments to semantic line breaks,
+  then push.
+- Changed: `6dc9f526b` Use semantic line breaks in the fork's docs and comments.
+  - `fork/README.md`, within 100 columns.
+  - The comments the fork wrote in Go code, 186 of them in 55 files, within 80 columns as before;
+    a few lines run longer where no break keeps their sense, such as a quoted example.
+  - The comments of the release workflow.
+
+  Left as they were:
+  upstream's comments, so that merges stay clean;
+  the config comments in `pkg/config/user_config.go`,
+  which become the JSON schema's descriptions and `Config.md`, newlines included,
+  and which upstream keeps on one line each;
+  and the aligned usage tables at the top of `fork/dev` and `fork/Dockerfile`.
+- Pushed: `custom`, with the commits of rounds 18 and 19.
+
 ## Not carried over
 
 - The zellij fork and its session dashboard (DevTools).
@@ -732,3 +750,7 @@ Sent twice, identically.
 
 > Fix the lint issues, and commit the changes.
 > Search over all my previous sessions with you regarding lazygit further, and make sure that your documentation covers all. Plus, list all my previous instructions as appendix.
+
+**A53.** 2026-11-10 19:30
+
+> Reflow them, and then push.
