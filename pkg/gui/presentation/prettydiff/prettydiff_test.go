@@ -1,6 +1,7 @@
 package prettydiff
 
 import (
+	"errors"
 	"io"
 	"regexp"
 	"strings"
@@ -311,7 +312,7 @@ func TestReaderReadsInSmallChunks(t *testing.T) {
 	for {
 		n, err := r.Read(buf)
 		out = append(out, buf[:n]...)
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		assert.NoError(t, err)

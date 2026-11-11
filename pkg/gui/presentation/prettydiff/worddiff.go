@@ -175,7 +175,7 @@ func BlockSpans(dels []string, adds []string) ([][]Span, [][]Span) {
 	}
 
 	if len(dels) == len(adds) || len(dels)*len(adds) > maxSimilarityPairings {
-		for i := 0; i < min(len(dels), len(adds)); i++ {
+		for i := range min(len(dels), len(adds)) {
 			pair(i, i)
 		}
 		return delSpans, addSpans
@@ -191,11 +191,9 @@ func BlockSpans(dels []string, adds []string) ([][]Span, [][]Span) {
 		// leave enough added lines for the remaining removed lines when there
 		// are more added than removed lines; and vice versa
 		bestJ, bestScore := -1, 0.0
-		lastJ := len(adds) - 1
+		lastJ := len(adds) - (len(dels) - i)
 		if len(dels) > len(adds) {
 			lastJ = j
-		} else {
-			lastJ = len(adds) - (len(dels) - i)
 		}
 		for k := j; k <= lastJ && k < len(adds); k++ {
 			if score := similarity(dels[i], adds[k]); score > bestScore {

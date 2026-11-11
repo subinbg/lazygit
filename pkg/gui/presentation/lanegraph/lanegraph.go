@@ -347,7 +347,7 @@ func buildRow(
 		addSegment(k)
 	}
 
-	for k := 0; k < numCols; k++ {
+	for k := range numCols {
 		c := conns[k]
 		if k == col {
 			cells[2*k] = cell{glyph: glyph, color: k}
@@ -357,9 +357,9 @@ func buildRow(
 		if g == 0 {
 			continue
 		}
-		color := k
-		if !c.up && !c.down {
-			color = c.hcolor
+		color := c.hcolor
+		if c.up || c.down {
+			color = k
 		}
 		if g == '│' && k < len(dashedCols) && dashedCols[k] {
 			g = dashedVertical

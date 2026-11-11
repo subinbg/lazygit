@@ -133,7 +133,8 @@ func RenderAux(pipeSets [][]Pipe, commits []*models.Commit, selectedCommitHashPt
 	return lo.Flatten(chunks)
 }
 
-func getNextPipes(prevPipes []Pipe, commit *models.Commit, getStyle func(c *models.Commit) *style.TextStyle) []Pipe {
+// getNextPipes ignores the style function: the lanes take their colors from the palette.
+func getNextPipes(prevPipes []Pipe, commit *models.Commit, _ func(c *models.Commit) *style.TextStyle) []Pipe {
 	// a pipe that terminated in the previous line has no bearing on the current line
 	// so we'll filter those out. The same goes for the pipe from a root commit to
 	// the empty tree, because no commit comes after a root commit.

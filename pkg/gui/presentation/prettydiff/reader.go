@@ -233,7 +233,7 @@ func ParseExtendedHeader(diffLine string, header []string) (string, []string) {
 		}
 	}
 
-	path := ""
+	var path string
 	switch {
 	case newPath != "" && newPath != "/dev/null":
 		path = stripPrefix(newPath, "b/")

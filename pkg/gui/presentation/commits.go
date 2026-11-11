@@ -806,13 +806,7 @@ func coloredExtraInfo(extraInfo string, laneStyle *style.TextStyle) string {
 	parts := strings.Split(inner, ", ")
 	colored := make([]string, 0, len(parts))
 	for _, part := range parts {
-		name := part
-		if after, found := strings.CutPrefix(name, "HEAD -> "); found {
-			name = after
-		}
-		if after, found := strings.CutPrefix(name, "tag: "); found {
-			name = after
-		}
+		name := strings.TrimPrefix(strings.TrimPrefix(part, "HEAD -> "), "tag: ")
 		colored = append(colored, palette.ByName(name).SetBold().Sprint(part))
 	}
 	sep := style.FgDefault.Sprint(", ")
